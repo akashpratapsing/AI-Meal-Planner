@@ -1,0 +1,22 @@
+# Node modules from frontend
+/frontend/node_modules
+
+# Spring Boot build files
+/backend/springboot/target
+
+# Python cache files
+/backend/flask/__pycache__/
+/backend/flask/*.pyc
+
+# Docker
+*.env
+docker-compose.override.yml
+
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Ignore local environment configs
+.env
