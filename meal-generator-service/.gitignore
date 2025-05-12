@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+.pip-wheel-metadata/
+
+# Environment variable files
+.env
+.env.*
+
+# Flask instance folder
+instance/
+
+# Flask migrations (if using Flask-Migrate)
+migrations/
+
+# Pytest and coverage reports
+htmlcov/
+.coverage
+.tox/
+.nox/
+.pytest_cache/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# VS Code & IDE config
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# macOS / Windows / Linux system files
+.DS_Store
+Thumbs.db
