@@ -15,8 +15,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
 
         httpSecurity
+        .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/**","api/public/**").permitAll()
+        .requestMatchers("/**","/api/mealplans/generate","api/public/**").permitAll()
         .anyRequest().authenticated()
         )
         .oauth2Login(Customizer.withDefaults());

@@ -37,6 +37,4 @@ public class MealPlanRequestDTO {
     private boolean wantDiverseMeals;
     private List<String> preferredCuisines;
 
-    // Portion Sizes
-    private int servings;
 }

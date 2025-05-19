@@ -16,12 +16,6 @@ public class MealPlan {
 
     private List<Meal> meals; 
 
-    private int totalCalories;
-    private int totalProtein;
-    private int totalCarbs;
-    private int totalFats;
-
     private String healthGoal;
-    private int servings;
     private String generatedDate;
 }

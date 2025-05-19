@@ -79,22 +79,60 @@ public class MealPlannerServiceImpl implements MealPlannerService {
     }
 
     private String buildPromptFromDTO(MealPlanRequestDTO dto) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Create a 7-day meal plan for a ");
-        sb.append(dto.getAge()).append("-year-old ");
-        sb.append(dto.getSex()).append(" with goal: ").append(dto.getHealthGoal()).append(". ");
-        sb.append("Target: ").append(dto.getTargetCalories()).append(" calories, ")
-                .append(dto.getTargetProtein()).append("g protein, ")
-                .append(dto.getTargetCarbs()).append("g carbs, ")
-                .append(dto.getTargetFats()).append("g fats. ");
-        sb.append("Diet type: ").append(dto.getDietType()).append(". ");
+    StringBuilder sb = new StringBuilder();
+
+    // Intro and user profile
+    sb.append("Create a 7-day meal plan for a ")
+      .append(dto.getAge()).append("-year-old ")
+      .append(dto.getSex()).append(" (")
+      .append(dto.getWeight()).append("kg, ")
+      .append(dto.getHeight()).append("cm) ")
+      .append("with goal: ").append(dto.getHealthGoal()).append(". ");
+
+    // Activity level
+    sb.append("Activity level: ").append(dto.getActivityLevel()).append(". ");
+
+    // Nutritional targets
+    sb.append("Target intake: ")
+      .append(dto.getTargetCalories()).append(" calories, ")
+      .append(dto.getTargetProtein()).append("g protein, ")
+      .append(dto.getTargetCarbs()).append("g carbs, ")
+      .append(dto.getTargetFats()).append("g fats. ");
+
+    // Diet and restrictions
+    sb.append("Diet type: ").append(dto.getDietType()).append(". ");
+
+    if (dto.getAllergies() != null && !dto.getAllergies().isEmpty()) {
         sb.append("Allergies: ").append(String.join(", ", dto.getAllergies())).append(". ");
-        sb.append("Meal times: ").append(String.join(", ", dto.getMealTimes())).append(". ");
-        sb.append("Prefers: ").append(String.join(", ", dto.getPreferredCuisines())).append(". ");
-        sb.append("Wants diverse meals: ").append(dto.isWantDiverseMeals() ? "Yes" : "No").append(". ");
-        sb.append("Max prep time: ").append(dto.getMaxPrepTime()).append(" mins. ");
-        sb.append("Available ingredients: ").append(String.join(", ", dto.getAvailableIngredients())).append(".");
-        return sb.toString();
     }
+
+    if (dto.getRestrictions() != null && !dto.getRestrictions().isEmpty()) {
+        sb.append("Restrictions: ").append(String.join(", ", dto.getRestrictions())).append(". ");
+    }
+
+    // Meal structure
+    sb.append("Meals per day: ").append(dto.getMealsPerDay()).append(". ");
+    if (dto.getMealTimes() != null && !dto.getMealTimes().isEmpty()) {
+        sb.append("Meal times: ").append(String.join(", ", dto.getMealTimes())).append(". ");
+    }
+
+    // Preferences
+    if (dto.getPreferredCuisines() != null && !dto.getPreferredCuisines().isEmpty()) {
+        sb.append("Preferred cuisines: ").append(String.join(", ", dto.getPreferredCuisines())).append(". ");
+    }
+
+    sb.append("Wants diverse meals: ").append(dto.isWantDiverseMeals() ? "Yes" : "No").append(". ");
+
+    // Constraints
+    sb.append("Max preparation time: ").append(dto.getMaxPrepTime()).append(" minutes. ");
+    sb.append("Budget: ₹").append(dto.getBudget()).append(" per day. ");
+
+    if (dto.getAvailableIngredients() != null && !dto.getAvailableIngredients().isEmpty()) {
+        sb.append("Available ingredients: ").append(String.join(", ", dto.getAvailableIngredients())).append(". ");
+    }
+
+    return sb.toString();
+}
+
 
 }
