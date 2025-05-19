@@ -1,0 +1,28 @@
+spring:
+  config:
+    activate:
+      on-profile: dev  # Activate 'dev' profile
+
+---
+# Dev profile configuration
+spring:
+  config:
+    activate:
+      on-profile: dev
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/devdb?authSource=admin
+  server:
+    port: 8081
+
+---
+# Prod profile configuration
+spring:
+  config:
+    activate:
+      on-profile: prod
+  data:
+    mongodb:
+      uri: mongodb://prod-server:27017/proddb?authSource=admin
+  server:
+    port: 8080
