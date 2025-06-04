@@ -16,6 +16,7 @@ public class User {
 
     private String name;
     private String email;
+    private String password;
 
     // Additional info for Generating Meal Plan
     private Integer age;
