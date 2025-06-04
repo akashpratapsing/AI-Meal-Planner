@@ -1,29 +1,34 @@
 package com.mealplanner.service;
 
+import com.mealplanner.auth.UserPrincipal;
 import com.mealplanner.dto.MealPlanRequestDTO;
-import com.mealplanner.model.Meal;
 import com.mealplanner.model.MealPlan;
+import com.mealplanner.repository.MealPlanRepository;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class MealPlannerServiceImpl implements MealPlannerService {
 
     private final RestTemplate restTemplate;
+    private final MealPlanRepository mealPlanRepository;
 
     @Value("${flask.meal.api.url}")
     private String flaskApiUrl;
 
     public MealPlannerServiceImpl(RestTemplateBuilder builder) {
         this.restTemplate = builder.build();
+        this.mealPlanRepository = null;
     }
 
     @Override
@@ -31,108 +36,107 @@ public class MealPlannerServiceImpl implements MealPlannerService {
         String prompt = buildPromptFromDTO(request);
 
         Map<String, Object> payload = new HashMap<>();
-        payload.put("prompt", prompt);  // key matches what Flask expects
+        payload.put("prompt", prompt);
 
         ResponseEntity<MealPlan> response = restTemplate.postForEntity(
                 flaskApiUrl,
                 payload,
-                MealPlan.class
-        );
+                MealPlan.class);
 
         MealPlan plan = response.getBody();
-//        if (plan != null) {
-//            plan.setUserId(request.getUserId()); // if you want to associate user
-//        }
+        String userId = getLoggedInUserId();
+        if (plan != null) {
+            plan.setUserId(userId);
+        }
 
         return plan;
     }
 
-
     @Override
-    public Optional<MealPlan> getMealPlanById(String id) {
-        return Optional.empty();
+    public MealPlan getMealPlanById(String id) {
+        MealPlan mealPlan = this.mealPlanRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Meal Plan not Found"));
+        return mealPlan;
     }
 
     @Override
     public List<MealPlan> getMealPlansByUserId(String userId) {
-        return List.of();
+        return this.mealPlanRepository.findByUserId(userId);
     }
 
     @Override
     public MealPlan saveMealPlan(MealPlan plan) {
-        return null;
+        return this.mealPlanRepository.save(plan);
     }
 
     @Override
-    public void deleteMealPlan(String id) {
-
-    }
-
-    @Override
-    public List<Meal> recommendMeals(MealPlanRequestDTO request) {
-        return List.of();
-    }
-
-    @Override
-    public boolean validateMealPreferences(MealPlanRequestDTO request) {
-        return false;
+    public boolean deleteMealPlan(String id) {
+        MealPlan mealPlan = this.mealPlanRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Meal plan not found"));
+        mealPlanRepository.delete(mealPlan);
+        return true;
     }
 
     private String buildPromptFromDTO(MealPlanRequestDTO dto) {
-    StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
 
-    // Intro and user profile
-    sb.append("Create a 7-day meal plan for a ")
-      .append(dto.getAge()).append("-year-old ")
-      .append(dto.getSex()).append(" (")
-      .append(dto.getWeight()).append("kg, ")
-      .append(dto.getHeight()).append("cm) ")
-      .append("with goal: ").append(dto.getHealthGoal()).append(". ");
+        // Intro and user profile
+        sb.append("Create a 7-day meal plan for a ")
+                .append(dto.getAge()).append("-year-old ")
+                .append(dto.getSex()).append(" (")
+                .append(dto.getWeight()).append("kg, ")
+                .append(dto.getHeight()).append("cm) ")
+                .append("with goal: ").append(dto.getHealthGoal()).append(". ");
 
-    // Activity level
-    sb.append("Activity level: ").append(dto.getActivityLevel()).append(". ");
+        // Activity level
+        sb.append("Activity level: ").append(dto.getActivityLevel()).append(". ");
 
-    // Nutritional targets
-    sb.append("Target intake: ")
-      .append(dto.getTargetCalories()).append(" calories, ")
-      .append(dto.getTargetProtein()).append("g protein, ")
-      .append(dto.getTargetCarbs()).append("g carbs, ")
-      .append(dto.getTargetFats()).append("g fats. ");
+        // Nutritional targets
+        sb.append("Target intake: ")
+                .append(dto.getTargetCalories()).append(" calories, ")
+                .append(dto.getTargetProtein()).append("g protein, ")
+                .append(dto.getTargetCarbs()).append("g carbs, ")
+                .append(dto.getTargetFats()).append("g fats. ");
 
-    // Diet and restrictions
-    sb.append("Diet type: ").append(dto.getDietType()).append(". ");
+        // Diet and restrictions
+        sb.append("Diet type: ").append(dto.getDietType()).append(". ");
 
-    if (dto.getAllergies() != null && !dto.getAllergies().isEmpty()) {
-        sb.append("Allergies: ").append(String.join(", ", dto.getAllergies())).append(". ");
+        if (dto.getAllergies() != null && !dto.getAllergies().isEmpty()) {
+            sb.append("Allergies: ").append(String.join(", ", dto.getAllergies())).append(". ");
+        }
+
+        if (dto.getRestrictions() != null && !dto.getRestrictions().isEmpty()) {
+            sb.append("Restrictions: ").append(String.join(", ", dto.getRestrictions())).append(". ");
+        }
+
+        // Meal structure
+        sb.append("Meals per day: ").append(dto.getMealsPerDay()).append(". ");
+        if (dto.getMealTimes() != null && !dto.getMealTimes().isEmpty()) {
+            sb.append("Meal times: ").append(String.join(", ", dto.getMealTimes())).append(". ");
+        }
+
+        // Preferences
+        if (dto.getPreferredCuisines() != null && !dto.getPreferredCuisines().isEmpty()) {
+            sb.append("Preferred cuisines: ").append(String.join(", ", dto.getPreferredCuisines())).append(". ");
+        }
+
+        sb.append("Wants diverse meals: ").append(dto.isWantDiverseMeals() ? "Yes" : "No").append(". ");
+
+        // Constraints
+        sb.append("Max preparation time: ").append(dto.getMaxPrepTime()).append(" minutes. ");
+        sb.append("Budget: ₹").append(dto.getBudget()).append(" per day. ");
+
+        if (dto.getAvailableIngredients() != null && !dto.getAvailableIngredients().isEmpty()) {
+            sb.append("Available ingredients: ").append(String.join(", ", dto.getAvailableIngredients())).append(". ");
+        }
+
+        return sb.toString();
     }
 
-    if (dto.getRestrictions() != null && !dto.getRestrictions().isEmpty()) {
-        sb.append("Restrictions: ").append(String.join(", ", dto.getRestrictions())).append(". ");
+    private String getLoggedInUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        return userPrincipal.getUser().getId(); // or getUserId(), depending on your class
     }
-
-    // Meal structure
-    sb.append("Meals per day: ").append(dto.getMealsPerDay()).append(". ");
-    if (dto.getMealTimes() != null && !dto.getMealTimes().isEmpty()) {
-        sb.append("Meal times: ").append(String.join(", ", dto.getMealTimes())).append(". ");
-    }
-
-    // Preferences
-    if (dto.getPreferredCuisines() != null && !dto.getPreferredCuisines().isEmpty()) {
-        sb.append("Preferred cuisines: ").append(String.join(", ", dto.getPreferredCuisines())).append(". ");
-    }
-
-    sb.append("Wants diverse meals: ").append(dto.isWantDiverseMeals() ? "Yes" : "No").append(". ");
-
-    // Constraints
-    sb.append("Max preparation time: ").append(dto.getMaxPrepTime()).append(" minutes. ");
-    sb.append("Budget: ₹").append(dto.getBudget()).append(" per day. ");
-
-    if (dto.getAvailableIngredients() != null && !dto.getAvailableIngredients().isEmpty()) {
-        sb.append("Available ingredients: ").append(String.join(", ", dto.getAvailableIngredients())).append(". ");
-    }
-
-    return sb.toString();
-}
-
 
 }
