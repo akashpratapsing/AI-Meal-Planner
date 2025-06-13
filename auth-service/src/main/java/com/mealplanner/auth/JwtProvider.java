@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtProvider {
@@ -17,23 +18,37 @@ public class JwtProvider {
 
     public JwtProvider(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.expiration}") long expirationInMs
-    ) {
+            @Value("${jwt.expiration}") long expirationInMs) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
         this.jwtExpirationInMs = expirationInMs;
     }
 
     // Generate token using user email
-    public String generateToken(String email) {
+    public String generateToken(String email, List<String> roles) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
         return Jwts.builder()
                 .setSubject(email)
+                .claim("roles", roles)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    // For OAuth and email-password login fallback
+    public String generateToken(String email) {
+        return generateToken(email, List.of("ROLE_USER")); // Default role
+    }
+
+    public List<String> getRolesFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("roles", List.class);
     }
 
     // Extract email from token
@@ -57,8 +72,8 @@ public class JwtProvider {
 
             String email = claims.getSubject();
             return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
-        } catch (SecurityException | MalformedJwtException | ExpiredJwtException |
-                 UnsupportedJwtException | IllegalArgumentException e) {
+        } catch (SecurityException | MalformedJwtException | ExpiredJwtException | UnsupportedJwtException
+                | IllegalArgumentException e) {
             System.err.println("Invalid JWT: " + e.getMessage());
             return false;
         }

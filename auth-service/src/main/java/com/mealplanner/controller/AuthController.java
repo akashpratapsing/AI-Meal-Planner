@@ -9,17 +9,21 @@ import com.mealplanner.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
@@ -31,7 +35,9 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    
     @PostMapping("/register")
+    @PreAuthorize("isAnonymous()")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("User already exists");
@@ -41,6 +47,7 @@ public class AuthController {
         user.setEmail(request.getEmail());
         user.setName(request.getName());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRoles(List.of("ROLE_USER"));
         userRepository.save(user);
 
         String token = jwtProvider.generateToken(user.getEmail());
@@ -48,6 +55,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @PreAuthorize("isAnonymous()")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -56,13 +64,13 @@ public class AuthController {
                             request.getPassword()));
 
             UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-            String token = jwtProvider.generateToken(userPrincipal.getUsername());
+            String token = jwtProvider.generateToken(userPrincipal.getUsername(), userPrincipal.getAuthorities()
+                    .stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
 
             return ResponseEntity.ok(Map.of(
                     "email", userPrincipal.getUsername(),
                     "userId", userPrincipal.getUser().getId(),
-                    "token", token
-            ));
+                    "token", token));
 
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
