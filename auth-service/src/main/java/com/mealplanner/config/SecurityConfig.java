@@ -1,14 +1,17 @@
 package com.mealplanner.config;
 
+import com.mealplanner.audit.AuditLoggingFilter;
 import com.mealplanner.auth.JwtAuthenticationFilter;
 import com.mealplanner.service.OAuth2UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -21,6 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -42,8 +46,8 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(
                                                                 "/auth/**",
-                                                                "/oauth2/**"
-                                                ).permitAll()
+                                                                "/oauth2/**")
+                                                .permitAll()
                                                 .anyRequest().authenticated())
                                 .oauth2Login(oauth2 -> oauth2
                                                 .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
@@ -64,5 +68,13 @@ public class SecurityConfig {
 
                 return new ProviderManager(authProvider);
         }
+
+        // @Bean
+        // public FilterRegistrationBean<AuditLoggingFilter> auditLoggingFilter(AuditLoggingFilter filter) {
+        //         FilterRegistrationBean<AuditLoggingFilter> registration = new FilterRegistrationBean<>();
+        //         registration.setFilter(filter);
+        //         registration.setOrder(2);
+        //         return registration;
+        // }
 
 }

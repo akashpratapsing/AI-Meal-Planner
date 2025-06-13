@@ -12,6 +12,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -33,15 +35,23 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             User newUser = new User();
             newUser.setEmail(email);
             newUser.setName(name);
+            newUser.setRoles(List.of("ROLE_USER"));
             return userRepository.save(newUser);
         });
 
-        String jwt = jwtProvider.generateToken(email);
+        String jwt = jwtProvider.generateToken(user.getEmail(), user.getRoles());
+
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("token", jwt);
+        responseBody.put("email", user.getEmail());
+        responseBody.put("userId", user.getId());
 
         response.setContentType("application/json");
-        response.getWriter().write(new ObjectMapper().writeValueAsString(Map.of("token", jwt)));
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(new ObjectMapper().writeValueAsString(responseBody));
 
         // Send token in redirect URL or store in cookie
         // response.sendRedirect("http://localhost:3000/oauth-success?token=" + jwt);
     }
+
 }
