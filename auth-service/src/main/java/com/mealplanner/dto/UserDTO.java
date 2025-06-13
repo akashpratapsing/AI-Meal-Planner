@@ -1,5 +1,7 @@
 package com.mealplanner.dto;
 
+import java.util.List;
+
 import com.mealplanner.model.User;
 
 import lombok.AllArgsConstructor;
@@ -15,6 +17,7 @@ public class UserDTO {
     private String name;
     private String email;
     private String password;
+    private List<String> roles;
     private Integer age;
     private Double height;
     private Double weight;
@@ -27,6 +30,7 @@ public class UserDTO {
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
+                .roles(user.getRoles())
                 .age(user.getAge())
                 .allergies(user.getAllergies())
                 .dietaryPreference(user.getDietaryPreference())

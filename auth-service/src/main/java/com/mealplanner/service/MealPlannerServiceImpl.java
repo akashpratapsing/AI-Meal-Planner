@@ -8,6 +8,7 @@ import com.mealplanner.repository.MealPlanRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class MealPlannerServiceImpl implements MealPlannerService {
     }
 
     @Override
+    @PreAuthorize("isAuthenticated()")
     public MealPlan generateMealPlan(MealPlanRequestDTO request) {
         String prompt = buildPromptFromDTO(request);
 
@@ -53,6 +55,7 @@ public class MealPlannerServiceImpl implements MealPlannerService {
     }
 
     @Override
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public MealPlan getMealPlanById(String id) {
         MealPlan mealPlan = this.mealPlanRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Meal Plan not Found"));
@@ -60,16 +63,19 @@ public class MealPlannerServiceImpl implements MealPlannerService {
     }
 
     @Override
+    @PreAuthorize("#userId == authentication.principal.user.id or hasRole('ADMIN')")
     public List<MealPlan> getMealPlansByUserId(String userId) {
         return this.mealPlanRepository.findByUserId(userId);
     }
 
     @Override
+    @PreAuthorize("#plan.userId == authentication.principal.user.id or hasRole('ADMIN')")
     public MealPlan saveMealPlan(MealPlan plan) {
         return this.mealPlanRepository.save(plan);
     }
 
     @Override
+    @PreAuthorize("#plan.userId == authentication.principal.user.id or hasRole('ADMIN')")
     public boolean deleteMealPlan(String id) {
         MealPlan mealPlan = this.mealPlanRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Meal plan not found"));

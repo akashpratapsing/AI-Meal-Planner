@@ -1,0 +1,35 @@
+type Query {
+    auditLogs(
+        email: String,
+        username: String,
+        role: String,
+        method: String,
+        endpoint: String,
+        from: String,
+        to: String,
+        page: Int = 0,
+        size: Int = 10
+    ): AuditLogPage
+}
+
+type AuditLogPage {
+    content: [AuditLog]
+    totalPages: Int
+    totalElements: Int
+    pageNumber: Int
+}
+
+type AuditLog {
+    id: ID!
+    username: String
+    email: String
+    roles: [String]
+    method: String
+    endpoint: String
+    timestamp: String
+    ipAddress: String
+    status: Int
+    userAgent: String
+    requestParams: String
+    requestBody: String
+}

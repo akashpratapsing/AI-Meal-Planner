@@ -1,7 +1,6 @@
 package com.mealplanner.service;
 
 import com.mealplanner.auth.UserPrincipal;
-import com.mealplanner.model.User;
 import com.mealplanner.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,9 +16,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
+        return userRepository.findByEmail(email)
+                .map(UserPrincipal::new)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        return new UserPrincipal(user);
     }
 }
