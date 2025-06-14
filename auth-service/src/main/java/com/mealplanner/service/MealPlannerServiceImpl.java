@@ -2,6 +2,7 @@ package com.mealplanner.service;
 
 import com.mealplanner.auth.UserPrincipal;
 import com.mealplanner.dto.MealPlanRequestDTO;
+import com.mealplanner.exceptions.MealPlanNotFoundException;
 import com.mealplanner.model.MealPlan;
 import com.mealplanner.repository.MealPlanRepository;
 
@@ -58,7 +59,7 @@ public class MealPlannerServiceImpl implements MealPlannerService {
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public MealPlan getMealPlanById(String id) {
         MealPlan mealPlan = this.mealPlanRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Meal Plan not Found"));
+                .orElseThrow(() -> new MealPlanNotFoundException("Meal Plan not Found with ID : " + id));
         return mealPlan;
     }
 
@@ -78,7 +79,7 @@ public class MealPlannerServiceImpl implements MealPlannerService {
     @PreAuthorize("#plan.userId == authentication.principal.user.id or hasRole('ADMIN')")
     public boolean deleteMealPlan(String id) {
         MealPlan mealPlan = this.mealPlanRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Meal plan not found"));
+                .orElseThrow(() -> new MealPlanNotFoundException("Meal plan not found with ID : " + id));
         mealPlanRepository.delete(mealPlan);
         return true;
     }
