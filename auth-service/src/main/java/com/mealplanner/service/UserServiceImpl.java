@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.mealplanner.dto.UserDTO;
+import com.mealplanner.exceptions.UserNotFoundException;
 import com.mealplanner.model.User;
 import com.mealplanner.repository.UserRepository;
 
@@ -31,7 +32,7 @@ public class UserServiceImpl implements UserService {
     @PreAuthorize("#id == authentication.principal.user.id or hasRole('ADMIN')")
     public UserDTO getUserById(String id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User Not Found with id : " + id));
+                .orElseThrow(() -> new UserNotFoundException("User Not Found with id : " + id));
         return UserDTO.fromEntity(user);
 
     }
@@ -40,7 +41,7 @@ public class UserServiceImpl implements UserService {
     @PreAuthorize("#id == authentication.principal.user.id or hasRole('ADMIN')")
     public UserDTO updateUserById(String id, UserDTO userDTO) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User Not Found with id : " + id));
+                .orElseThrow(() -> new UserNotFoundException("User Not Found with id : " + id));
         user.setName(userDTO.getName());
         // user.setPassword(userDTO.getPassword());
         // user.setEmail(userDTO.getEmail());
@@ -58,7 +59,7 @@ public class UserServiceImpl implements UserService {
     @PreAuthorize("hasRole('ADMIN')")
     public boolean deleteUserById(String id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User Not Found with id : " + id));
+                .orElseThrow(() -> new UserNotFoundException("User Not Found with id : " + id));
 
         userRepository.delete(user);
         return true;
