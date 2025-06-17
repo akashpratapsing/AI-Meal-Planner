@@ -6,11 +6,11 @@ const ProfileSidebar = () => (
         className="w-24 h-24 rounded-full mb-2"
         alt="profile"
       />
-      <h2 className="text-lg font-bold">Success Stories</h2>
-      <p className="text-sm text-gray-500">Transform your diet</p>
+      <h2 className="text-lg text-black font-bold">Jhon Doe</h2>
+      <p className="text-sm text-gray-800">Transform your diet</p>
     </div>
 
-    <div className="mt-6 space-y-4 text-sm">
+    <div className="mt-6 space-y-4 text-black text-sm">
       <div>
         <p className="font-medium">User testimonials</p>
         <p className="text-gray-500">Favorite meals: Vegan, Keto, Paleo</p>
