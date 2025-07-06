@@ -3,7 +3,7 @@ import { FaSmile } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="bg-white border-t border-gray-200 py-10 sm:py-12 md:py-16">
+    <footer className="bg-cyan-50 border-t border-gray-200 py-10 sm:py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-6">
         {/* Top Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 mb-12">

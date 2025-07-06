@@ -1,2 +1,68 @@
 @import "tailwindcss";
 @plugin "daisyui";
+@plugin "daisyui/theme" {
+  name: "fitmeal-oceanic";
+  default: false;
+  prefersdark: false;
+  color-scheme: "light";
+
+  /* Base Backgrounds & Text */
+  --color-base-100: oklch(96% 0.02 220); /* light blue background */
+  --color-base-200: oklch(93% 0.03 225);
+  --color-base-300: oklch(90% 0.03 220);
+  --color-base-content: oklch(20% 0.005 260); /* dark text */
+
+  /* Primary - vibrant cyan */
+  --color-primary: oklch(68% 0.25 210); /* #00BEE8 range */
+  --color-primary-content: oklch(98% 0.005 260); /* white text */
+
+  /* Secondary - soft purple for highlights */
+  --color-secondary: oklch(65% 0.22 290); /* lavender-violet tone */
+  --color-secondary-content: oklch(98% 0.01 280); /* white text */
+
+  /* Accent - deeper indigo/blue */
+  --color-accent: oklch(52% 0.23 250); /* deep blue-violet */
+  --color-accent-content: oklch(97% 0.01 260); /* light text */
+
+  /* Neutral (gray shades) */
+  --color-neutral: oklch(82% 0.01 240);  /* soft gray-blue */
+  --color-neutral-content: oklch(18% 0.005 260);  /* near black */
+
+  /* Status Colors */
+  --color-info: oklch(72% 0.21 245);  /* bright cyan */
+  --color-info-content: oklch(98% 0.02 260);
+
+  --color-success: oklch(70% 0.24 160); /* teal green */
+  --color-success-content: oklch(98% 0.02 150);
+
+  --color-warning: oklch(78% 0.21 90);  /* light yellow-orange */
+  --color-warning-content: oklch(20% 0.01 70);
+
+  --color-error: oklch(60% 0.26 25);  /* red-orange */
+  --color-error-content: oklch(98% 0.015 20);
+
+  /* Radius & Size */
+  --radius-selector: 0.5rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  /* Border, Shadows, Noise */
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+html {
+  scroll-behavior: smooth;
+}
