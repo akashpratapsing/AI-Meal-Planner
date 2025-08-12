@@ -1,24 +1,28 @@
 // DashboardLayout.jsx
-import React from "react";
+import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import ProfileSidebar from "../components/sections/ProfileSidebar";
 import UserNavbar from "../components/layout/UserNavbar";
+import ProfileSidebar from "../components/userComponents/ProfileSidebar";
 
 const UserPanel = () => {
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+
+  const handleSidebarToggle = (isExpanded) => {
+    setSidebarExpanded(isExpanded);
+  };
+
   return (
-     <div className="h-screen w-full flex flex-col">
+    <div className="h-screen w-full flex flex-col">
       {/* Navbar */}
-      <header className="h-16 shadow bg-white z-10">
+      {/* <header className="h-16 shadow bg-white z-10">
         <UserNavbar />
-      </header>
+      </header> */}
 
       {/* Main Content Section */}
       <div className="flex flex-1 overflow-hidden bg-[#d2f0f8]">
-        {/* Sidebar */}
-        <aside className="w-[289px] p-4">
-          <div className="h-full bg-base-100 rounded-xl shadow overflow-y-auto">
-            <ProfileSidebar />
-          </div>
+        {/* Sidebar - Dynamic width based on expanded state */}
+        <aside className={`transition-all duration-300 ${sidebarExpanded ? 'w-64' : 'w-16'}`}>
+          <ProfileSidebar onToggle={handleSidebarToggle} />
         </aside>
 
         {/* Outlet (Main Section) */}

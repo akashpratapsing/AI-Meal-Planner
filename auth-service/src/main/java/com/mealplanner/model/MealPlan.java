@@ -11,11 +11,10 @@ public class MealPlan {
 
     @Id
     private String id;
-
     private String userId;
-
-    private List<Meal> meals; 
-
+    private String mealName;
+    private List<Meal> meals;
     private String healthGoal;
     private String generatedDate;
+
 }

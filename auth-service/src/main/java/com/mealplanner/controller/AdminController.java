@@ -42,23 +42,23 @@ public class AdminController {
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
 
-    @PostMapping("/auth/register-admin")
-    @PreAuthorize("isAnonymous()")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("User already exists");
-        }
+    // @PostMapping("/auth/register-admin")
+    // @PreAuthorize("isAnonymous()")
+    // public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    //     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+    //         return ResponseEntity.badRequest().body("User already exists");
+    //     }
 
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setName(request.getName());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRoles(List.of("ROLE_ADMIN"));
-        userRepository.save(user);
+    //     User user = new User();
+    //     user.setEmail(request.getEmail());
+    //     user.setName(request.getName());
+    //     user.setPassword(passwordEncoder.encode(request.getPassword()));
+    //     user.setRoles(List.of("ROLE_ADMIN"));
+    //     userRepository.save(user);
 
-        String token = jwtProvider.generateToken(user.getEmail());
-        return ResponseEntity.ok(Map.of("token", token));
-    }
+    //     String token = jwtProvider.generateToken(user.getEmail());
+    //     return ResponseEntity.ok(Map.of("token", token));
+    // }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/users/{id}/roles")

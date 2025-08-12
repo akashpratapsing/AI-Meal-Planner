@@ -1,105 +1,48 @@
-import React, { useState } from 'react';
-import { Calendar, User, Clock, Search, Filter } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { Calendar, User, Clock, Search, Filter } from "lucide-react";
+import { getMealPlansByUser } from "../../services/mealService";
+import { getCustomMealPlansByUserId } from "../../services/customMealService";
+import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
-const MealPlanList = ({ mealPlans }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
+const MealPlanList = () => {
+  const [regularPlans, setRegularPlans] = useState([]);
+  const [customPlans, setCustomPlans] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const navigate = useNavigate();
 
-  const defaultMealPlans = [
-    {
-      id: 1,
-      name: "Mediterranean Week",
-      dateCreated: "2024-12-15",
-      dietaryType: "vegetarian",
-      totalMeals: 21,
-      description: "Fresh Mediterranean flavors with olive oil, herbs, and vegetables"
-    },
-    {
-      id: 2,
-      name: "Protein Power Plan",
-      dateCreated: "2024-12-10",
-      dietaryType: "non-vegetarian",
-      totalMeals: 21,
-      description: "High-protein meals for muscle building and recovery"
-    },
-    {
-      id: 3,
-      name: "Plant-Based Paradise",
-      dateCreated: "2024-12-08",
-      dietaryType: "vegan",
-      totalMeals: 21,
-      description: "100% plant-based meals packed with nutrients"
-    },
-    {
-      id: 4,
-      name: "Keto Kickstart",
-      dateCreated: "2024-12-05",
-      dietaryType: "non-vegetarian",
-      totalMeals: 21,
-      description: "Low-carb, high-fat meals for ketogenic lifestyle"
-    },
-    {
-      id: 5,
-      name: "Balanced Family Plan",
-      dateCreated: "2024-12-01",
-      dietaryType: "vegetarian",
-      totalMeals: 21,
-      description: "Family-friendly meals with balanced nutrition"
-    },
-    {
-      id: 6,
-      name: "Quick & Easy Vegan",
-      dateCreated: "2024-11-28",
-      dietaryType: "vegan",
-      totalMeals: 21,
-      description: "Simple vegan meals that can be prepared in 30 minutes"
-    },
-    {
-      id: 7,
-      name: "Gluten-Free Gourmet",
-      dateCreated: "2024-11-25",
-      dietaryType: "gluten-free",
-      totalMeals: 21,
-      description: "Delicious gluten-free meals without compromising on taste"
-    },
-    {
-      id: 8,
-      name: "Pescatarian Delights",
-      dateCreated: "2024-11-20",
-      dietaryType: "pescatarian",
-      totalMeals: 21,
-      description: "Fish and seafood-based meals with vegetables"
-    }
-  ];
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
 
-  const plans = mealPlans || defaultMealPlans;
+        const decoded = jwtDecode(token);
+        const userId =  decoded.userId || decoded.id;
+
+        const [regular, custom] = await Promise.all([
+          getMealPlansByUser(token),
+          getCustomMealPlansByUserId(userId, token),
+        ]);
+
+        setRegularPlans(regular || []);
+        setCustomPlans(custom || []);
+        console.log(custom);
+      } catch (error) {
+        console.error("Error fetching plans:", error.message);
+      }
+    };
+
+    fetchPlans();
+  }, []);
 
   const dietaryTypes = {
-    vegetarian: {
-      label: "Vegetarian",
-      icon: "🥬",
-      className: "badge badge-success"
-    },
-    vegan: {
-      label: "Vegan",
-      icon: "🌱",
-      className: "badge badge-accent"
-    },
-    "non-vegetarian": {
-      label: "Non-Veg",
-      icon: "🍗",
-      className: "badge badge-error"
-    },
-    pescatarian: {
-      label: "Pescatarian",
-      icon: "🐟",
-      className: "badge badge-info"
-    },
-    "gluten-free": {
-      label: "Gluten-Free",
-      icon: "🌾",
-      className: "badge badge-warning w-40"
-    }
+    vegetarian: { label: "Vegetarian", icon: "🥬", className: "badge badge-success" },
+    vegan: { label: "Vegan", icon: "🌱", className: "badge badge-accent" },
+    "non-vegetarian": { label: "Non-Veg", icon: "🍗", className: "badge badge-error" },
+    pescatarian: { label: "Pescatarian", icon: "🐟", className: "badge badge-info" },
+    "gluten-free": { label: "Gluten-Free", icon: "🌾", className: "badge badge-warning w-40" },
   };
 
   const formatDate = (dateStr) => {
@@ -107,31 +50,120 @@ const MealPlanList = ({ mealPlans }) => {
     return date.toLocaleDateString("en-US", {
       day: "numeric",
       month: "short",
-      year: "numeric"
+      year: "numeric",
     });
   };
 
-  const filteredPlans = plans.filter(plan => {
-    const matchesSearch =
-      plan.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      plan.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter =
-      filterType === 'all' || plan.dietaryType === filterType;
-    return matchesSearch && matchesFilter;
+  const filteredRegularPlans = regularPlans.filter((plan) => {
+    const nameMatch = (plan.mealName || "").toLowerCase().includes(searchTerm.toLowerCase());
+    const goalMatch = (plan.healthGoal || "").toLowerCase().includes(searchTerm.toLowerCase());
+    const dietaryMatch = filterType === "all" || plan.dietaryType === filterType;
+    return (nameMatch || goalMatch) && dietaryMatch;
   });
 
+  const renderRegularPlans = () =>
+    filteredRegularPlans.map((plan) => {
+      const badge = dietaryTypes[plan.dietaryType] || {};
+      return (
+        <div key={plan.id} className="card bg-base-200 shadow-md border border-base-300">
+          <div className="card-body space-y-2">
+            <div className="flex justify-between items-start">
+              <h3 className="text-xl font-bold">{plan.mealName}</h3>
+              {badge.label && (
+                <div className={badge.className}>
+                  {badge.icon} {badge.label}
+                </div>
+              )}
+            </div>
+
+            <p className="text-sm opacity-80">{plan.healthGoal}</p>
+
+            <div className="text-sm opacity-70 flex items-center gap-2">
+              <User className="w-4 h-4" />
+              {plan.meals?.length || 0} meals
+            </div>
+
+            <div className="text-sm opacity-70 flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              {formatDate(plan.generatedDate)}
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <button
+                className="btn btn-primary btn-sm flex-1"
+                onClick={() => navigate(`/dashboard/mealPlans/${plan.id}`)}
+              >
+                View Plan
+              </button>
+              <button className="btn btn-outline btn-sm">
+                <Clock className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    });
+
+  const renderCustomPlans = () =>
+    customPlans.map((plan) => (
+      <div key={plan.id} className="card bg-base-200 shadow-md border border-base-300">
+        <div className="card-body space-y-2">
+          <h3 className="text-xl font-bold">{plan.mealPlanName}</h3>
+
+          <p className="text-sm opacity-80">Meals Per Day: {plan.mealsPerDay}</p>
+
+          <div className="text-sm opacity-70 flex items-center gap-2">
+            <User className="w-4 h-4" />
+            {plan.selectedMeals?.length || 0} selected meals
+          </div>
+
+          <div className="text-sm opacity-70 flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            {formatDate(plan.createdDate)}
+          </div>
+
+          {plan.selectedMeals?.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto py-2">
+              {plan.selectedMeals.slice(0, 3).map((meal) => (
+                <img
+                  key={meal.idMeal}
+                  src={meal.strMealThumb}
+                  alt={meal.strMeal}
+                  className="w-12 h-12 rounded object-cover border"
+                  title={meal.strMeal}
+                />
+              ))}
+              {plan.selectedMeals.length > 3 && (
+                <span className="text-sm text-gray-500 self-center">
+                  +{plan.selectedMeals.length - 3} more
+                </span>
+              )}
+            </div>
+          )}
+
+          <div className="mt-4">
+            <button
+              className="btn btn-primary btn-sm w-full"
+              onClick={() => navigate(`/dashboard/customMealPlans/${plan.id}`)}
+            >
+              View Plan
+            </button>
+          </div>
+        </div>
+      </div>
+    ));
+
   return (
-    <div className="bg-base-100 min-h-screen py-10 px-4 text-base-content">
+    <div className=" min-h-screen py-10 px-4 text-base-content">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold mb-1">📋 My Meal Plans</h2>
           <p className="text-opacity-70">Browse and manage your saved meal plans</p>
         </div>
 
-        {/* Filters */}
+        {/* Filters - only for regular plans */}
         <div className="bg-base-200 rounded-xl p-6 shadow mb-6 border border-base-300">
           <div className="flex flex-col md:flex-row gap-4">
-            {/* Search */}
             <label className="input input-bordered flex items-center gap-2 w-full md:w-2/3">
               <Search className="w-4 h-4" />
               <input
@@ -143,7 +175,6 @@ const MealPlanList = ({ mealPlans }) => {
               />
             </label>
 
-            {/* Filter Dropdown */}
             <label className="input input-bordered flex items-center gap-2 w-full md:w-1/3">
               <Filter className="w-4 h-4" />
               <select
@@ -153,70 +184,38 @@ const MealPlanList = ({ mealPlans }) => {
               >
                 <option value="all">All Types</option>
                 {Object.entries(dietaryTypes).map(([key, val]) => (
-                  <option value={key} key={key}>{val.label}</option>
+                  <option value={key} key={key}>
+                    {val.label}
+                  </option>
                 ))}
               </select>
             </label>
           </div>
         </div>
 
-        {/* Plan Count */}
-        <div className="mb-4 text-sm opacity-70">
-          Showing {filteredPlans.length} plan{filteredPlans.length !== 1 ? 's' : ''}
+        {/* Regular Plans */}
+        <div className="mb-10">
+          <h3 className="text-2xl font-semibold mb-4">🧠 Regular Meal Plans</h3>
+          {filteredRegularPlans.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {renderRegularPlans()}
+            </div>
+          ) : (
+            <p className="text-center text-gray-500">No regular plans found.</p>
+          )}
         </div>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPlans.map(plan => {
-            const badge = dietaryTypes[plan.dietaryType] || {};
-            return (
-              <div
-                key={plan.id}
-                className="card bg-base-200 shadow-md hover:shadow-lg transition border border-base-300"
-              >
-                <div className="card-body space-y-2">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-xl font-bold">{plan.name}</h3>
-                    <div className={badge.className}>
-                      {badge.icon} {badge.label}
-                    </div>
-                  </div>
-
-                  <p className="text-sm opacity-80">{plan.description}</p>
-
-                  <div className="text-sm opacity-70 flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    {plan.totalMeals} meals
-                  </div>
-
-                  <div className="text-sm opacity-70 flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    {formatDate(plan.dateCreated)}
-                  </div>
-
-                  <div className="mt-4 flex gap-2">
-                    <button className="btn btn-primary btn-sm flex-1">
-                      View Plan
-                    </button>
-                    <button className="btn btn-outline btn-sm">
-                      <Clock className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        {/* Custom Plans */}
+        <div className="mb-10">
+          <h3 className="text-2xl font-semibold mb-4">👤 Custom Meal Plans</h3>
+          {customPlans.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {renderCustomPlans()}
+            </div>
+          ) : (
+            <p className="text-center text-gray-500">No custom plans found.</p>
+          )}
         </div>
-
-        {filteredPlans.length === 0 && (
-          <div className="text-center mt-16">
-            <p className="text-4xl">🍽️</p>
-            <h3 className="text-xl font-bold mt-2">No meal plans found</h3>
-            <p className="opacity-70">
-              Try adjusting your search or filter to see results.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -1,10 +1,12 @@
-package com.mealplanner.service;
+package com.mealplanner.service.impl;
 
 import com.mealplanner.auth.UserPrincipal;
 import com.mealplanner.dto.MealPlanRequestDTO;
 import com.mealplanner.exceptions.MealPlanNotFoundException;
 import com.mealplanner.model.MealPlan;
 import com.mealplanner.repository.MealPlanRepository;
+import com.mealplanner.service.MealPlannerService;
+import com.mealplanner.service.PaymentService;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -24,13 +26,20 @@ public class MealPlannerServiceImpl implements MealPlannerService {
 
     private final RestTemplate restTemplate;
     private final MealPlanRepository mealPlanRepository;
+    private final PaymentService paymentService;
 
     @Value("${flask.meal.api.url}")
     private String flaskApiUrl;
 
-    public MealPlannerServiceImpl(RestTemplateBuilder builder) {
+    // public MealPlannerServiceImpl(RestTemplateBuilder builder) {
+    // this.restTemplate = builder.build();
+    // this.mealPlanRepository = null;
+    // }
+
+    public MealPlannerServiceImpl(RestTemplateBuilder builder, MealPlanRepository mealPlanRepository, PaymentService paymentService) {
         this.restTemplate = builder.build();
-        this.mealPlanRepository = null;
+        this.mealPlanRepository = mealPlanRepository;
+        this.paymentService = paymentService;
     }
 
     @Override
@@ -66,6 +75,12 @@ public class MealPlannerServiceImpl implements MealPlannerService {
     @Override
     @PreAuthorize("#userId == authentication.principal.user.id or hasRole('ADMIN')")
     public List<MealPlan> getMealPlansByUserId(String userId) {
+        return this.mealPlanRepository.findByUserId(userId);
+    }
+
+    @Override
+    public List<MealPlan> getMealPlansByUser() {
+        String userId = getLoggedInUserId();
         return this.mealPlanRepository.findByUserId(userId);
     }
 

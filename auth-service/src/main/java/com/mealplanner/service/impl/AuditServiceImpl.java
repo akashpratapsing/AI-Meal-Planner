@@ -1,4 +1,4 @@
-package com.mealplanner.service;
+package com.mealplanner.service.impl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.mealplanner.dto.AuditLogPage;
 import com.mealplanner.model.AuditLog;
+import com.mealplanner.service.AuditService;
 
 @Service
 @RequiredArgsConstructor

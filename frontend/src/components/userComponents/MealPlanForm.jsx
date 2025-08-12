@@ -10,7 +10,8 @@ import {
   Globe,
   Heart,
 } from "lucide-react";
-import { Form } from "react-router-dom";
+import { generateMealPlan } from "../../services/mealService";
+import { useNavigate } from "react-router-dom";
 
 const MealPlanForm = () => {
   const [formData, setFormData] = useState({
@@ -40,6 +41,8 @@ const MealPlanForm = () => {
   const [newRestriction, setNewRestriction] = useState("");
   const [newIngredient, setNewIngredient] = useState("");
   const [selectedCuisines, setSelectedCuisines] = useState([]);
+
+  const navigate = useNavigate();
 
   const dietTypes = [
     "All Meals",
@@ -128,13 +131,31 @@ const MealPlanForm = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    console.log("Meal Plan Request:", formData);
-    // Handle form submission
+  const handleSubmit = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        alert("Please log in to generate a meal plan.");
+        return;
+      }
+
+      console.log("Sending Meal Plan Request:", formData);
+
+      const plan = await generateMealPlan(formData, token);
+
+      console.log("Generated Meal Plan:", plan);
+      alert("Meal plan generated successfully!");
+
+      navigate("/dashboard/mealPlans/view", { state: { mealPlan: plan } });
+    } catch (error) {
+      console.error("Error generating meal plan:", error.message);
+      alert("Failed to generate meal plan. Please try again.");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-100 p-4">
+    <div className="min-h-screen p-4">
       <div className="max-w-4xl mx-auto">
         <form>
           {/* Header */}

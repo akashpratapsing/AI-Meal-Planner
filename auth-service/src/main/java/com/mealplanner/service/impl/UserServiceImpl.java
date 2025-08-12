@@ -1,4 +1,4 @@
-package com.mealplanner.service;
+package com.mealplanner.service.impl;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,6 +11,7 @@ import com.mealplanner.dto.UserDTO;
 import com.mealplanner.exceptions.UserNotFoundException;
 import com.mealplanner.model.User;
 import com.mealplanner.repository.UserRepository;
+import com.mealplanner.service.UserService;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -45,6 +46,7 @@ public class UserServiceImpl implements UserService {
         user.setName(userDTO.getName());
         // user.setPassword(userDTO.getPassword());
         // user.setEmail(userDTO.getEmail());
+        user.setSex(userDTO.getSex());
         user.setAge(userDTO.getAge());
         user.setAllergies(userDTO.getAllergies());
         user.setHeight(userDTO.getHeight());

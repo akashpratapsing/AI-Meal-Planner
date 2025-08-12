@@ -1,4 +1,4 @@
-package com.mealplanner.service;
+package com.mealplanner.service.impl;
 
 import com.mealplanner.auth.UserPrincipal;
 import com.mealplanner.repository.UserRepository;

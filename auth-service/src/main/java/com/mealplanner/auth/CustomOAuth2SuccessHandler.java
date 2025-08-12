@@ -39,7 +39,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             return userRepository.save(newUser);
         });
 
-        String jwt = jwtProvider.generateToken(user.getEmail(), user.getRoles());
+        String jwt = jwtProvider.generateToken(user.getId(), user.getEmail(), user.getRoles());
 
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("token", jwt);

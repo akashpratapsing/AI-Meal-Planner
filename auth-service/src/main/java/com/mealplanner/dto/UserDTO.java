@@ -18,6 +18,7 @@ public class UserDTO {
     private String email;
     private String password;
     private List<String> roles;
+    private String sex;
     private Integer age;
     private Double height;
     private Double weight;
@@ -31,6 +32,7 @@ public class UserDTO {
                 .name(user.getName())
                 .email(user.getEmail())
                 .roles(user.getRoles())
+                .sex(user.getSex())
                 .age(user.getAge())
                 .allergies(user.getAllergies())
                 .dietaryPreference(user.getDietaryPreference())

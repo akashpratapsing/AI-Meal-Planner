@@ -7,7 +7,7 @@ import com.mealplanner.model.MealPlan;
 
 public interface MealPlannerService {
 
-     // Generate a meal plan based on user input/preferences
+    // Generate a meal plan based on user input/preferences
     MealPlan generateMealPlan(MealPlanRequestDTO request);
 
     // Get an existing meal plan by its ID
@@ -15,6 +15,7 @@ public interface MealPlannerService {
 
     // Get all meal plans for a particular user
     List<MealPlan> getMealPlansByUserId(String userId);
+    List<MealPlan> getMealPlansByUser();
 
     // Save a meal plan to the database
     MealPlan saveMealPlan(MealPlan plan);

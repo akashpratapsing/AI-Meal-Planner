@@ -22,12 +22,17 @@ public class User {
     private List<String> roles;
 
     // Additional info for Generating Meal Plan
+    private String sex;
     private Integer age;
     private Double height;
     private Double weight;
     private String religion;
     private String dietaryPreference;
     private String allergies;
+    
+    // Subscription info
+    private String currentSubscriptionId;
+    private String subscriptionStatus;
 
 
 }

@@ -163,7 +163,7 @@ const TestimonialsSection = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      {/* <style jsx>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
@@ -171,7 +171,7 @@ const TestimonialsSection = () => {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
-      `}</style>
+      `}</style> */}
     </div>
   );
 };

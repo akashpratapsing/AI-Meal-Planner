@@ -1,80 +1,54 @@
 package com.mealplanner.controller;
 
-import com.mealplanner.auth.JwtProvider;
 import com.mealplanner.auth.UserPrincipal;
+import com.mealplanner.dto.ChangePasswordRequest;
 import com.mealplanner.dto.LoginRequest;
 import com.mealplanner.dto.RegisterRequest;
-import com.mealplanner.model.User;
-import com.mealplanner.repository.UserRepository;
+import com.mealplanner.service.AuthService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth/v1")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtProvider jwtProvider;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
-    
     @PostMapping("/register")
     @PreAuthorize("isAnonymous()")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("User already exists");
-        }
-
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setName(request.getName());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRoles(List.of("ROLE_USER"));
-        userRepository.save(user);
-
-        String token = jwtProvider.generateToken(user.getEmail());
-        return ResponseEntity.ok(Map.of("token", token));
+        String message = authService.register(request);
+        return ResponseEntity.ok(message);
     }
 
     @PostMapping("/login")
-    @PreAuthorize("isAnonymous()")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()));
-
-            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-            String token = jwtProvider.generateToken(userPrincipal.getUsername(), userPrincipal.getAuthorities()
-                    .stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
-
-            return ResponseEntity.ok(Map.of(
-                    "email", userPrincipal.getUsername(),
-                    "userId", userPrincipal.getUser().getId(),
-                    "token", token));
-
-        } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+            Map<String, Object> response = authService.login(request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(userPrincipal.getUsername(), request);
+        return ResponseEntity.ok("Password changed successfully");
+    }
 }
