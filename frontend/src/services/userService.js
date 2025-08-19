@@ -46,7 +46,11 @@ export const getUserById = async (userId) => {
  * @param {string} userId
  */
 export const deleteUserById = async (userId) => {
-  const response = await axios.delete(`${API_BASE}/delete/${userId}`);
+  const response = await axios.delete(`${BASE_URL}/delete/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
   return response.data;
 };
 
@@ -54,6 +58,26 @@ export const deleteUserById = async (userId) => {
  * Get all users (Admin access only)
  */
 export const getAllUsers = async () => {
-  const response = await axios.get(`${API_BASE}/all`);
+  const response = await axios.get(`${BASE_URL}/all`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  return response.data;
+};
+
+export const uploadProfilePicture = async (userId, file) => {
+  const formData = new FormData();
+  formData.append("image", file);
+  const response = await axios.post(
+    `${BASE_URL}/${userId}/upload-profile`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
   return response.data;
 };

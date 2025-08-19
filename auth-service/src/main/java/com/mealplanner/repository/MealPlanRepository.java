@@ -7,5 +7,5 @@ import com.mealplanner.model.MealPlan;
 public interface MealPlanRepository extends MongoRepository<MealPlan, String> {
 
     List<MealPlan> findByUserId(String userId);
-
+    
 }

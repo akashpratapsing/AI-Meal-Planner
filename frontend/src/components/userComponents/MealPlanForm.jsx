@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { generateMealPlan } from "../../services/mealService";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const MealPlanForm = () => {
   const [formData, setFormData] = useState({
@@ -145,12 +146,14 @@ const MealPlanForm = () => {
       const plan = await generateMealPlan(formData, token);
 
       console.log("Generated Meal Plan:", plan);
-      alert("Meal plan generated successfully!");
+      // alert("Meal plan generated successfully!");
+      toast.success("Meal plan generated successfully!");
 
       navigate("/dashboard/mealPlans/view", { state: { mealPlan: plan } });
     } catch (error) {
       console.error("Error generating meal plan:", error.message);
-      alert("Failed to generate meal plan. Please try again.");
+      toast.error("Failed to generate meal plan. Please try again.");
+      // alert("Failed to generate meal plan. Please try again.");
     }
   };
 

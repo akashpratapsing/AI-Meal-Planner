@@ -17,10 +17,13 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import Welcome from "./components/userComponents/Welcome";
 import MealCard from "./components/userComponents/MealCard";
 import CustomMealPlanView from "./components/userComponents/CustomMealPlanView";
+import toast, { Toaster } from "react-hot-toast";
+import Unauthorized from "./components/Unauthorized";
 
 function App() {
   return (
     <>
+      <Toaster />
       <Routes>
         {/* Public */}
         <Route path="/" element={<LandingPage />} />
@@ -37,9 +40,7 @@ function App() {
         {/* User Routes */}
         <Route
           element={
-            <RoleBasedRoute
-              allowedRoles={["ROLE_USER", "ROLE_PRO", "ROLE_PREMIUM"]}
-            />
+            <RoleBasedRoute allowedRoles={["ROLE_USER", "ROLE_ADMIN"]} />
           }
         >
           <Route path="/dashboard" element={<UserPanel />}>
@@ -49,7 +50,10 @@ function App() {
             <Route path="mealPlans/view" element={<WeeklyMealView />} />
             <Route path="mealPlans/:id" element={<WeeklyMealView />} />
             <Route path="mealPlans/:id/view" element={<MealCard />} />
-            <Route path="customMealPlans/:id" element={<CustomMealPlanView />} />
+            <Route
+              path="customMealPlans/:id"
+              element={<CustomMealPlanView />}
+            />
             <Route path="random" element={<SuggestedMeal />} />
             <Route path="me" element={<PersonalInfo />} />
             <Route path="build" element={<CustomMealPlanBuilder />} />
@@ -62,9 +66,7 @@ function App() {
         <Route
           path="/unauthorized"
           element={
-            <div className="text-center p-6 text-red-500 text-xl">
-              Access Denied
-            </div>
+            <Unauthorized />
           }
         />
       </Routes>

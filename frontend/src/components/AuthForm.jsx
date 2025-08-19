@@ -3,6 +3,7 @@ import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { loginUser, registerUser } from "../services/authService";
+import toast from 'react-hot-toast';
 
 const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -51,11 +52,13 @@ const AuthForm = () => {
 
         localStorage.setItem("user", JSON.stringify(userData));
         // setUser(userData);
+        toast.success("Login successful 🎉");
         login(userData, res.token);
         navigate("/protected");
       } else {
         if (formData.password !== formData.confirmPassword) {
           setError("Passwords do not match.");
+          toast.error("Passwords do not match ❌");
           setLoading(false);
           return;
         }
@@ -67,11 +70,13 @@ const AuthForm = () => {
         };
 
         const res = await registerUser(payload);
-        alert(res); // string response like: "User registered Successfully"
+        // alert(res); // string response like: "User registered Successfully"
+        toast.success("User registered Successfully🎉");
         setIsLogin(true);
       }
     } catch (err) {
       setError(err.message || "Something went wrong");
+      toast.error(err.message || "Something went wrong 😢");
     } finally {
       setLoading(false);
     }

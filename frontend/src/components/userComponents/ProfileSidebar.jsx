@@ -5,13 +5,14 @@ import {
   FaClipboardList,
   FaLightbulb,
   FaHeart,
-  FaCog,
   FaSignOutAlt,
   FaUtensils,
 } from "react-icons/fa";
 import { Rocket } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import logo from "../../assets/logo.svg";
+import icon from "../../assets/icon.svg";
 
 const ProfileSidebar = ({ onToggle }) => {
   const { logout } = useAuth();
@@ -41,33 +42,41 @@ const ProfileSidebar = ({ onToggle }) => {
 
   return (
     <div className="h-full bg-base-300 rounded-xl shadow-xl flex flex-col">
-      <div className="flex justify-end p-2">
-        <button 
-          onClick={toggleSidebar} 
+      {/* Toggle button → only visible on large screens */}
+      <div className="hidden lg:flex justify-end p-2">
+        <button
+          onClick={toggleSidebar}
           className="btn btn-ghost btn-sm btn-circle"
         >
-          {expanded ? '←' : '→'}
+          {expanded ? "←" : "→"}
         </button>
       </div>
 
-      {/* Profile Info */}
-      <div className={`flex flex-col items-center text-center mb-6 ${expanded ? 'px-6' : 'px-2'}`}>
+      {/* Website Logo */}
+      <div
+        className={`flex items-center justify-center mb-6 ${
+          expanded ? "px-6" : "px-2"
+        }`}
+      >
         <img
-          src="https://randomuser.me/api/portraits/men/44.jpg"
-          className={`${expanded ? 'w-20 h-20' : 'w-10 h-10'} rounded-full mb-2 border-2 border-primary`}
-          alt="profile"
+          src={expanded ? logo : icon}
+          className={`${expanded ? "w-48 h-24" : "w-12 h-12"} rounded-md`}
+          alt="Website Logo"
         />
-        {expanded && (
-          <>
-            <h2 className="text-lg font-bold text-gray-800">Jhon Doe</h2>
-            <p className="text-sm text-gray-500">Transform your diet</p>
-          </>
-        )}
       </div>
 
       {/* Navigation Menu */}
-      <nav className={`flex flex-col gap-2 text-sm text-gray-700 ${expanded ? 'px-4' : 'px-1'} flex-1 overflow-y-auto`}>
-        <SidebarLink icon={<FaUser />} label="My Details" to="/dashboard/me" expanded={expanded} />
+      <nav
+        className={`flex flex-col gap-2 text-sm text-gray-700 ${
+          expanded ? "px-4" : "px-1"
+        } flex-1 overflow-y-auto`}
+      >
+        <SidebarLink
+          icon={<FaUser />}
+          label="My Details"
+          to="/dashboard/me"
+          expanded={expanded}
+        />
         <SidebarLink
           icon={<FaPlus />}
           label="Create Meal Plan"
@@ -105,12 +114,14 @@ const ProfileSidebar = ({ onToggle }) => {
           expanded={expanded}
         />
       </nav>
-      
+
       {/* Logout button at bottom */}
-      <div className={`p-2 ${expanded ? 'px-4' : 'px-1'} mt-auto`}>
+      <div className={`p-2 ${expanded ? "px-4" : "px-1"} mt-auto`}>
         <button
           onClick={handleLogout}
-          className={`flex items-center ${expanded ? 'justify-start space-x-2 px-4' : 'justify-center'} py-2 hover:bg-gray-100 w-full rounded-lg`}
+          className={`flex items-center ${
+            expanded ? "justify-start space-x-2 px-4" : "justify-center"
+          } py-2 hover:bg-gray-100 w-full rounded-lg`}
         >
           <FaSignOutAlt />
           {expanded && <span>Logout</span>}
@@ -125,7 +136,9 @@ const SidebarLink = ({ icon, label, to, expanded }) => (
   <NavLink
     to={to}
     className={({ isActive }) =>
-      `flex items-center ${expanded ? 'justify-start gap-3 px-3' : 'justify-center'} py-2 rounded-lg transition ${
+      `flex items-center ${
+        expanded ? "justify-start gap-3 px-3" : "justify-center"
+      } py-2 rounded-lg transition ${
         isActive ? "bg-white font-semibold" : "hover:bg-blue-100"
       }`
     }

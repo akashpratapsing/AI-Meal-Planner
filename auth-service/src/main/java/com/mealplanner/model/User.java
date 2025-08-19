@@ -29,10 +29,12 @@ public class User {
     private String religion;
     private String dietaryPreference;
     private String allergies;
-    
+
     // Subscription info
     private String currentSubscriptionId;
     private String subscriptionStatus;
 
+    // Profile image
+    private String profileImageUrl; // URL from Cloudinary
 
 }

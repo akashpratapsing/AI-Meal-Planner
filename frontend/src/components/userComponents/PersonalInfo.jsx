@@ -19,14 +19,20 @@ import {
   AtSign,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-import { getUserById, updateUser } from "../../services/userService";
+import {
+  getUserById,
+  updateUser,
+  uploadProfilePicture,
+} from "../../services/userService";
 import { changePassword } from "../../services/authService";
+import toast from "react-hot-toast";
 
 const PersonalInfo = () => {
   const { user } = useAuth();
 
   const [userInfo, setUserInfo] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -45,6 +51,7 @@ const PersonalInfo = () => {
         const data = await getUserById(user.userId);
         setUserInfo({ ...data });
       } catch (error) {
+        toast.error("Failed to fetch user info");
         console.error("Failed to fetch user info", error);
       }
     };
@@ -54,6 +61,29 @@ const PersonalInfo = () => {
     }
   }, [user]);
 
+  const fileInputRef = React.useRef();
+
+  const handleProfilePicClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleProfilePicChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const imageUrl = await uploadProfilePicture(user.userId, file);
+      setUserInfo((prev) => ({ ...prev, profileImageUrl: imageUrl }));
+      toast.success("Profile picture updated!");
+    } catch (error) {
+      toast.error("Failed to upload profile picture");
+      console.error(error);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleEdit = () => setIsEditing(true);
 
   const handleSave = async () => {
@@ -62,7 +92,8 @@ const PersonalInfo = () => {
       setUserInfo(updated);
       setIsEditing(false);
     } catch (error) {
-      alert("Failed to update user info");
+      toast.error("Failed to update user info");
+      // alert("Failed to update user info");
       console.error(error);
     }
   };
@@ -93,46 +124,60 @@ const PersonalInfo = () => {
 
   const handlePasswordSubmit = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert("New passwords do not match!");
+      toast.error("New Password do not match");
+      // alert("New passwords do not match!");
       return;
     }
     if (passwordData.newPassword.length < 8) {
-      alert("Password must be at least 8 characters long!");
+      // alert("Password must be at least 8 characters long!");
+      toast.error("Password must be at least 8 characters long!");
       return;
     }
 
-     try {
-    const token = localStorage.getItem("token"); // adjust if you store it differently
-    const payload = {
-      currentPassword: passwordData.currentPassword,
-      newPassword: passwordData.newPassword,
-      confirmPassword: passwordData.confirmPassword,
-    };
+    try {
+      const token = localStorage.getItem("token"); // adjust if you store it differently
+      const payload = {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+        confirmPassword: passwordData.confirmPassword,
+      };
 
-    const response = await changePassword(payload, token);
-    alert(response); // API returns "Password changed successfully"
+      const response = await changePassword(payload, token);
+      // alert(response); // API returns "Password changed successfully"
+      toast.success(response);
 
-    // Reset state & close modal
-    setShowPasswordModal(false);
-    setPasswordData({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
-  } catch (error) {
-    alert(error.message);
-    console.error("Password change error:", error);
-  }
+      // Reset state & close modal
+      setShowPasswordModal(false);
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      // alert(error.message);
+      console.error("Password change error:", error);
+    }
   };
 
   const sexOptions = ["Male", "Female", "Other", "Prefer not to say"];
   const dietaryOptions = [
-    "None", "Vegetarian", "Vegan", "Pescatarian",
-    "Keto", "Paleo", "Gluten-free", "Dairy-free",
+    "None",
+    "Vegetarian",
+    "Vegan",
+    "Pescatarian",
+    "Keto",
+    "Paleo",
+    "Gluten-free",
+    "Dairy-free",
   ];
   const religionOptions = [
-    "Christianity", "Islam", "Judaism", "Hinduism",
-    "Buddhism", "Other", "Prefer not to say",
+    "Christianity",
+    "Islam",
+    "Judaism",
+    "Hinduism",
+    "Buddhism",
+    "Other",
+    "Prefer not to say",
   ];
 
   const InfoField = ({
@@ -160,7 +205,10 @@ const PersonalInfo = () => {
                 </option>
               ))}
             </select>
-            <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-base-content/50" />
+            <ChevronDown
+              size={18}
+              className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-base-content/50"
+            />
           </div>
         ) : type === "textarea" ? (
           <textarea
@@ -190,7 +238,9 @@ const PersonalInfo = () => {
   );
 
   if (!userInfo) {
-    return <div className="text-center mt-10 text-lg">Loading user data...</div>;
+    return (
+      <div className="text-center mt-10 text-lg">Loading user data...</div>
+    );
   }
 
   return (
@@ -198,22 +248,64 @@ const PersonalInfo = () => {
       <div className="bg-base-100 rounded-3xl shadow-lg relative z-10 h-full flex flex-col">
         {/* Profile Header */}
         <div className="px-8 pt-6 pb-4 flex flex-col md:flex-row md:items-center md:justify-between shrink-0">
-          <div className="flex items-center gap-4">
+          {/* <div className="flex items-center gap-4">
             <img
               src="https://randomuser.me/api/portraits/men/44.jpg"
               className="w-16 h-16 rounded-full border-4 border-base-100 shadow-md"
               alt="profile"
             />
             <div>
-              <h2 className="text-xl font-bold">{userInfo.name || "User Name"}</h2>
+              <h2 className="text-xl font-bold">
+                {userInfo.name || "User Name"}
+              </h2>
               <p className="text-base-content/60 flex items-center gap-1">
                 <AtSign size={14} />
                 {userInfo.email}
               </p>
             </div>
+          </div> */}
+
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <img
+                src={
+                  userInfo?.profileImageUrl || "https://via.placeholder.com/150"
+                }
+                className="w-16 h-16 rounded-full border-4 border-base-100 shadow-md object-cover"
+                alt="profile"
+              />
+              {uploadingImage && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white rounded-full">
+                  Uploading...
+                </div>
+              )}
+            </div>
+            <div>
+              <h2 className="text-xl font-bold">
+                {userInfo?.name || "User Name"}
+              </h2>
+              <p className="text-base-content/60 flex items-center gap-1">
+                <AtSign size={14} />
+                {userInfo?.email}
+              </p>
+              <button
+                className="btn btn-sm btn-outline mt-2"
+                onClick={handleProfilePicClick}
+                disabled={uploadingImage}
+              >
+                Upload Profile Picture
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleProfilePicChange}
+              />
+            </div>
           </div>
-          
-          <button 
+
+          <button
             className="btn btn-primary mt-4 md:mt-0 px-6 rounded-full"
             onClick={isEditing ? handleSave : handleEdit}
           >
@@ -228,7 +320,7 @@ const PersonalInfo = () => {
             )}
           </button>
         </div>
-        
+
         {/* Form Content */}
         <div className="p-6 flex-1 overflow-y-auto">
           {isEditing && (
@@ -238,24 +330,55 @@ const PersonalInfo = () => {
               </button>
             </div>
           )}
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <InfoField label="Full Name" value={userInfo.name} field="name" />
-            <InfoField label="Email Address" value={userInfo.email} field="email" type="email" readOnly />
-            <InfoField label="Age" value={userInfo.age} field="age" type="number" />
-            <InfoField label="Gender" value={userInfo.sex} field="sex" options={sexOptions} />
+            <InfoField
+              label="Email Address"
+              value={userInfo.email}
+              field="email"
+              type="email"
+              readOnly
+            />
+            <InfoField
+              label="Age"
+              value={userInfo.age}
+              field="age"
+              type="number"
+            />
+            <InfoField
+              label="Gender"
+              value={userInfo.sex}
+              field="sex"
+              options={sexOptions}
+            />
             <InfoField label="Height" value={userInfo.height} field="height" />
             <InfoField label="Weight" value={userInfo.weight} field="weight" />
-            <InfoField label="Religion" value={userInfo.religion} field="religion" options={religionOptions} />
-            <InfoField label="Dietary Preference" value={userInfo.dietaryPreference} field="dietaryPreference" options={dietaryOptions} />
+            <InfoField
+              label="Religion"
+              value={userInfo.religion}
+              field="religion"
+              options={religionOptions}
+            />
+            <InfoField
+              label="Dietary Preference"
+              value={userInfo.dietaryPreference}
+              field="dietaryPreference"
+              options={dietaryOptions}
+            />
           </div>
-          
+
           <div className="mt-4">
-            <InfoField label="Allergies & Restrictions" value={userInfo.allergies} field="allergies" type="textarea" />
+            <InfoField
+              label="Allergies & Restrictions"
+              value={userInfo.allergies}
+              field="allergies"
+              type="textarea"
+            />
           </div>
-          
+
           <div className="mt-6 flex justify-center">
-            <button 
+            <button
               className="btn btn-outline btn-warning px-8 rounded-full"
               onClick={() => setShowPasswordModal(true)}
             >
@@ -271,8 +394,8 @@ const PersonalInfo = () => {
           <div className="bg-base-100 rounded-2xl p-8 max-w-md w-full shadow-2xl animate-fade-in">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold">Change Password</h3>
-              <button 
-                className="btn btn-sm btn-circle btn-ghost" 
+              <button
+                className="btn btn-sm btn-circle btn-ghost"
                 onClick={() => {
                   setShowPasswordModal(false);
                   setPasswordData({
@@ -288,18 +411,37 @@ const PersonalInfo = () => {
 
             <div className="space-y-6">
               {[
-                { label: "Current Password", field: "currentPassword", show: showCurrentPassword, setShow: setShowCurrentPassword },
-                { label: "New Password", field: "newPassword", show: showNewPassword, setShow: setShowNewPassword },
-                { label: "Confirm New Password", field: "confirmPassword", show: showConfirmPassword, setShow: setShowConfirmPassword },
+                {
+                  label: "Current Password",
+                  field: "currentPassword",
+                  show: showCurrentPassword,
+                  setShow: setShowCurrentPassword,
+                },
+                {
+                  label: "New Password",
+                  field: "newPassword",
+                  show: showNewPassword,
+                  setShow: setShowNewPassword,
+                },
+                {
+                  label: "Confirm New Password",
+                  field: "confirmPassword",
+                  show: showConfirmPassword,
+                  setShow: setShowConfirmPassword,
+                },
               ].map(({ label, field, show, setShow }) => (
                 <div className="form-control" key={field}>
-                  <label className="text-base-content/70 font-medium mb-2">{label}</label>
+                  <label className="text-base-content/70 font-medium mb-2">
+                    {label}
+                  </label>
                   <div className="relative">
                     <input
                       type={show ? "text" : "password"}
                       className="input input-bordered w-full pr-10 bg-base-200/50 rounded-lg"
                       value={passwordData[field]}
-                      onChange={(e) => handlePasswordChange(field, e.target.value)}
+                      onChange={(e) =>
+                        handlePasswordChange(field, e.target.value)
+                      }
                       placeholder={`Enter ${label.toLowerCase()}`}
                     />
                     <button

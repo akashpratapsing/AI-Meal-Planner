@@ -25,6 +25,7 @@ public class UserDTO {
     private String religion;
     private String dietaryPreference;
     private String allergies;
+    private String profileImageUrl;
 
     public static UserDTO fromEntity(User user) {
         return UserDTO.builder()
@@ -39,6 +40,7 @@ public class UserDTO {
                 .religion(user.getReligion())
                 .height(user.getHeight())
                 .weight(user.getWeight())
+                .profileImageUrl(user.getProfileImageUrl())
                 .build();
     }
 

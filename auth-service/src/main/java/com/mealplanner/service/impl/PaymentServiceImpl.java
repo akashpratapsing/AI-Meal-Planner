@@ -1,9 +1,9 @@
 package com.mealplanner.service.impl;
 
-import com.mealplanner.auth.UserPrincipal;
 import com.mealplanner.dto.CreateOrderRequest;
 import com.mealplanner.dto.PaymentVerificationRequest;
 import com.mealplanner.dto.SubscriptionResponse;
+import com.mealplanner.exceptions.UserNotFoundException;
 import com.mealplanner.model.PaymentTransaction;
 import com.mealplanner.model.Subscription;
 import com.mealplanner.model.SubscriptionPlan;
@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -48,7 +47,7 @@ public class PaymentServiceImpl implements PaymentService {
     public Map<String, Object> createOrder(CreateOrderRequest request, String userId) {
         try {
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new UserNotFoundException("User Not Found with id : " + userId));
 
             SubscriptionPlan plan = request.getPlan();
             
@@ -329,7 +328,6 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private String getRazorpayKeyId() {
-        // This should come from configuration
-        return keyId; // Replace with actual key from properties
+        return keyId; 
     }
 }

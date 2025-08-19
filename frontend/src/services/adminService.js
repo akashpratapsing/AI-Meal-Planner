@@ -1,111 +1,94 @@
 import axios from "axios";
 
-const API_BASE = "/api";
+const API_BASE_URL = "http://localhost:8081/api/admin/v1";
+
+// Create axios instance with default config
+const api = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+// Interceptor to add Authorization header for every request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 /**
- * Update user roles (Admin only)
+ * Update user roles
  * @param {string} userId
  * @param {string[]} roles
  */
-export const updateUserRoles = async (userId, roles) => {
-  const response = await axios.put(`${API_BASE}/users/${userId}/roles`, roles);
-  return response.data;
+export const updateUserRoles = (userId, roles) => {
+  return api.put(`/users/${userId}/roles`, roles);
 };
 
 /**
- * Get paginated & filtered audit logs (GraphQL)
- * @param {object} filter
- * @param {number} page
- * @param {number} size
+ * Export logs and automatically trigger download
+ * @param {Object} filters
+ * @param {string} [filters.email]
+ * @param {string} [filters.username]
+ * @param {string} [filters.role]
+ * @param {string} [filters.method]
+ * @param {string} [filters.endpoint]
+ * @param {string} [filters.from] - ISO datetime format
+ * @param {string} [filters.to]   - ISO datetime format
+ * @param {string} [filters.format] - "csv" (default) or "excel"
  */
-export const getAuditLogs = async (filter, page = 0, size = 10) => {
-  const query = `
-    query AuditLogs(
-      $email: String,
-      $username: String,
-      $role: String,
-      $method: String,
-      $endpoint: String,
-      $from: String,
-      $to: String,
-      $page: Int!,
-      $size: Int!
-    ) {
-      auditLogs(
-        email: $email,
-        username: $username,
-        role: $role,
-        method: $method,
-        endpoint: $endpoint,
-        from: $from,
-        to: $to,
-        page: $page,
-        size: $size
-      ) {
-        content {
-          id
-          email
-          username
-          role
-          method
-          endpoint
-          timestamp
-        }
-        totalPages
-        totalElements
-        number
-        size
-      }
-    }
-  `;
-
-  const variables = {
-    ...filter,
-    page,
-    size,
-  };
-
-  const response = await axios.post("/graphql", {
-    query,
-    variables,
-  });
-
-  return response.data.data.auditLogs;
-};
-
-/**
- * Export audit logs (CSV or Excel)
- * @param {object} params
- * @param {"csv" | "excel"} format
- */
-export const exportAuditLogs = async (params = {}, format = "csv") => {
-  const queryParams = new URLSearchParams({
-    ...params,
-    format,
-  }).toString();
-
-  const response = await axios.get(`${API_BASE}/logs/export?${queryParams}`, {
+export const exportLogs = async (filters = {}) => {
+  const response = await api.get(`/logs/export`, {
+    params: filters,
     responseType: "blob",
   });
 
-  return response;
+  // Determine file name based on format
+  const fileName = filters.format === "excel" ? "audit_logs.xlsx" : "audit_logs.csv";
+
+  // Create download link
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", fileName);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
 };
 
-export const fetchUserCount = async () => {
-  /* API Call */
+/**
+ * Get total user count
+ */
+export const getTotalUserCount = () => {
+  return api.get(`/count`);
 };
-export const fetchUserRoles = async () => {
-  /* API Call */
+
+/**
+ * Get active user count by subscription plan
+ */
+export const getActiveUserCountByPlan = () => {
+  return api.get(`/count-by-plan`);
 };
-export const fetchActivityLogs = async () => {
-  /* API Call */
+
+/**
+ * Create a new user
+ * @param {Object} userData
+ */
+export const createUser = async (userData) => {
+  try {
+    const response = await api.post(`/create`, userData, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data; // message string like "✅ User created successfully"
+  } catch (error) {
+    if (error.response) {
+      // Backend returned error response
+      throw new Error(error.response.data || "Failed to create user");
+    } else {
+      throw new Error("Network error");
+    }
+  }
 };
-export const fetchAllUsers = async () => {
-  /* API Call */
-};
-export const fetchTopFeatures = async () => {
-  /* API Call */
-};
-export const fetchActiveUserStats = async () => {
-  /* API Call */
-};
+

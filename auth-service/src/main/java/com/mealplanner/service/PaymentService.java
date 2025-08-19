@@ -3,8 +3,6 @@ package com.mealplanner.service;
 import com.mealplanner.dto.CreateOrderRequest;
 import com.mealplanner.dto.PaymentVerificationRequest;
 import com.mealplanner.dto.SubscriptionResponse;
-import com.mealplanner.model.SubscriptionPlan;
-
 import java.util.Map;
 
 public interface PaymentService {

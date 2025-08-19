@@ -28,7 +28,7 @@ const MealPlanList = () => {
 
         setRegularPlans(regular || []);
         setCustomPlans(custom || []);
-        console.log(custom);
+        // console.log(custom);
       } catch (error) {
         console.error("Error fetching plans:", error.message);
       }

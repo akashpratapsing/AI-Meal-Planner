@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Heart, RefreshCw, Clock, MapPin, Tag, ChefHat } from "lucide-react";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const SuggestedMeal = () => {
   const [meal, setMeal] = useState(null);
@@ -42,7 +43,8 @@ const SuggestedMeal = () => {
     } catch (error) {
       console.error("Error fetching meal:", error);
       // Simple alert instead of toast
-      alert("Failed to fetch random meal.");
+      // alert("Failed to fetch random meal.");
+      toast.error("Failed to fetch random meal.");
     }
     setLoading(false);
     setIsFavorited(false);

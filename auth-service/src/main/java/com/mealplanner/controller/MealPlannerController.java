@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +29,7 @@ public class MealPlannerController {
     }
 
     @PostMapping("/generate")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MealPlan> generateMealPlan(@RequestBody MealPlanRequestDTO request) {
         MealPlan plan = mealPlannerService.generateMealPlan(request);
         return ResponseEntity.ok(plan);
@@ -46,6 +48,7 @@ public class MealPlannerController {
     }
 
     @PostMapping
+
     public ResponseEntity<MealPlan> saveMealPlan(@RequestBody MealPlan mealPlan) {
         MealPlan saved = mealPlannerService.saveMealPlan(mealPlan);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);

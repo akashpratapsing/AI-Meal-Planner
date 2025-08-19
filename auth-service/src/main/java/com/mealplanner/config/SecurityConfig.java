@@ -2,7 +2,6 @@ package com.mealplanner.config;
 
 import com.mealplanner.auth.JwtAuthenticationFilter;
 import com.mealplanner.service.impl.OAuth2UserServiceImpl;
-import com.mealplanner.interceptor.ApiRateLimitInterceptor;
 
 import lombok.RequiredArgsConstructor;
 
@@ -39,7 +38,6 @@ public class SecurityConfig {
         private final AuthenticationEntryPoint unauthorizedHandler;
         private final PasswordEncoder passwordEncoder;
         private final UserDetailsService userDetailsService;
-        private final ApiRateLimitInterceptor apiRateLimitInterceptor;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
