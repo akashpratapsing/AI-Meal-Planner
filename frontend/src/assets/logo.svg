@@ -1,0 +1,67 @@
+<svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Modern gradient -->
+    <linearGradient id="modernGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#667eea"/>
+      <stop offset="100%" style="stop-color:#764ba2"/>
+    </linearGradient>
+    
+    <!-- Accent gradient -->
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#11998e"/>
+      <stop offset="100%" style="stop-color:#38ef7d"/>
+    </linearGradient>
+    
+    <!-- Drop shadow -->
+    <filter id="modernShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+  
+  <!-- Main icon container -->
+  <g transform="translate(20, 20)">
+    <!-- Rounded square background -->
+    <rect x="0" y="0" width="80" height="80" rx="16" fill="url(#modernGradient)" filter="url(#modernShadow)"/>
+    
+    <!-- Modern plate/bowl outline -->
+    <circle cx="40" cy="40" r="28" fill="none" stroke="#ffffff" stroke-width="2.5" opacity="0.9"/>
+    
+    <!-- Geometric food elements -->
+    <!-- Stylized leaf -->
+    <path d="M30 35 Q35 30 40 35 Q35 40 30 35" fill="#ffffff" opacity="0.85"/>
+    
+    <!-- Modern utensil - fork -->
+    <g stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.8">
+      <line x1="25" y1="25" x2="25" y2="35"/>
+      <line x1="23" y1="25" x2="23" y2="30"/>
+      <line x1="27" y1="25" x2="27" y2="30"/>
+    </g>
+    
+    <!-- Modern utensil - spoon -->
+    <ellipse cx="55" cy="28" rx="2" ry="4" fill="#ffffff" opacity="0.8"/>
+    <line x1="55" y1="32" x2="55" y2="40" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+    
+    <!-- Minimalist calendar dots -->
+    <g fill="#ffffff" opacity="0.6">
+      <circle cx="48" cy="48" r="1.5"/>
+      <circle cx="53" cy="48" r="1.5"/>
+      <circle cx="48" cy="53" r="1.5"/>
+    </g>
+  </g>
+  
+  <!-- Modern typography -->
+  <g font-family="'Segoe UI', 'Roboto', sans-serif">
+    <!-- FIT MEAL - Same line, different weights -->
+    <text x="120" y="50" font-size="24" font-weight="700" fill="url(#modernGradient)" letter-spacing="-0.5px">FIT</text>
+    <text x="165" y="50" font-size="24" font-weight="300" fill="#4a5568" letter-spacing="0.2px">MEAL</text>
+    
+    <!-- PLANNER - Second line, styled -->
+    <text x="120" y="75" font-size="20" font-weight="500" fill="#667eea" letter-spacing="2px">PLANNER</text>
+    
+    <!-- Subtle tagline -->
+    <text x="120" y="90" font-size="9" font-weight="300" fill="#2d3748" letter-spacing="1px" opacity="1">HEALTHY • SMART • SIMPLE</text>
+  </g>
+  
+  <!-- Modern accent element -->
+  <rect x="115" y="50" width="3" height="20" rx="1.5" fill="url(#accentGradient)"/>
+</svg>

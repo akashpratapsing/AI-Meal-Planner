@@ -1,10 +1,11 @@
-package com.mealplanner.service;
+package com.mealplanner.service.impl;
 
 import com.mealplanner.auth.UserPrincipal;
 import com.mealplanner.dto.MealPlanRequestDTO;
 import com.mealplanner.exceptions.MealPlanNotFoundException;
 import com.mealplanner.model.MealPlan;
 import com.mealplanner.repository.MealPlanRepository;
+import com.mealplanner.service.MealPlannerService;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -28,13 +29,17 @@ public class MealPlannerServiceImpl implements MealPlannerService {
     @Value("${flask.meal.api.url}")
     private String flaskApiUrl;
 
-    public MealPlannerServiceImpl(RestTemplateBuilder builder) {
+    // public MealPlannerServiceImpl(RestTemplateBuilder builder) {
+    // this.restTemplate = builder.build();
+    // this.mealPlanRepository = null;
+    // }
+
+    public MealPlannerServiceImpl(RestTemplateBuilder builder, MealPlanRepository mealPlanRepository) {
         this.restTemplate = builder.build();
-        this.mealPlanRepository = null;
+        this.mealPlanRepository = mealPlanRepository;
     }
 
     @Override
-    @PreAuthorize("isAuthenticated()")
     public MealPlan generateMealPlan(MealPlanRequestDTO request) {
         String prompt = buildPromptFromDTO(request);
 
@@ -56,7 +61,8 @@ public class MealPlannerServiceImpl implements MealPlannerService {
     }
 
     @Override
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    // @PreAuthorize("#userId == authentication.principal.user.id or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or principal.user.id != null")
     public MealPlan getMealPlanById(String id) {
         MealPlan mealPlan = this.mealPlanRepository.findById(id)
                 .orElseThrow(() -> new MealPlanNotFoundException("Meal Plan not Found with ID : " + id));
@@ -64,8 +70,16 @@ public class MealPlannerServiceImpl implements MealPlannerService {
     }
 
     @Override
-    @PreAuthorize("#userId == authentication.principal.user.id or hasRole('ADMIN')")
     public List<MealPlan> getMealPlansByUserId(String userId) {
+        return this.mealPlanRepository.findByUserId(userId);
+    }
+
+    @Override
+    // @PreAuthorize("#userId == authentication.principal.user.id or
+    // hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or principal.user.id != null")
+    public List<MealPlan> getMealPlansByUser() {
+        String userId = getLoggedInUserId();
         return this.mealPlanRepository.findByUserId(userId);
     }
 
@@ -143,7 +157,7 @@ public class MealPlannerServiceImpl implements MealPlannerService {
     private String getLoggedInUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        return userPrincipal.getUser().getId(); // or getUserId(), depending on your class
+        return userPrincipal.getUser().getId();
     }
 
 }

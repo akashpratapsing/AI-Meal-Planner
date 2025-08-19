@@ -1,6 +1,5 @@
 package com.mealplanner.auth;
 
-import com.mealplanner.service.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +10,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.mealplanner.service.impl.UserDetailsServiceImpl;
 
 import java.io.IOException;
 

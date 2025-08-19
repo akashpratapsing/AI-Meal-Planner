@@ -22,11 +22,11 @@ public class ExcelExportUtil {
 
         for (int i = 0; i < columns.length; i++) {
             header.createCell(i).setCellValue(columns[i]);
-        }
+            }
 
-        int rowNum = 1;
+            int rowNum = 1;
         for (AuditLog log : logs) {
-            Row row = sheet.createRow(rowNum++);
+                Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(log.getUsername());
             row.createCell(1).setCellValue(log.getEmail());
             row.createCell(2).setCellValue(String.join("|", log.getRoles()));
@@ -38,7 +38,7 @@ public class ExcelExportUtil {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         workbook.write(out);
         workbook.close();
-
+        
         return out.toByteArray();
     }
 }

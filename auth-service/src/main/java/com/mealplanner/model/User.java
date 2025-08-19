@@ -22,6 +22,7 @@ public class User {
     private List<String> roles;
 
     // Additional info for Generating Meal Plan
+    private String sex;
     private Integer age;
     private Double height;
     private Double weight;
@@ -29,5 +30,11 @@ public class User {
     private String dietaryPreference;
     private String allergies;
 
+    // Subscription info
+    private String currentSubscriptionId;
+    private String subscriptionStatus;
+
+    // Profile image
+    private String profileImageUrl; // URL from Cloudinary
 
 }

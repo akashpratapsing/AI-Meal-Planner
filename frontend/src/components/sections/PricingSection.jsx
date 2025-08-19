@@ -1,15 +1,18 @@
 
 import React, { useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Leaf, Dumbbell, Heart, Users, Target, TrendingUp, Check, X, Star, Crown, Camera } from 'lucide-react';
+import { createOrder, verifyPayment } from '../../services/paymentService';
 
 const PricingSection = () => {
+  const [loading, setLoading] = useState(false);
+
   const plans = [
     {
       id: 1,
       name: "Free",
       price: 0,
       period: "month",
-      icon: <Camera className="w-6 h-6" />,
+      icon: <Camera className="w-6 h-6" />, // You can change the icon if desired
       features: [
         { name: "5 meal plans monthly", included: true },
         { name: "Recipe library", included: true },
@@ -21,25 +24,10 @@ const PricingSection = () => {
     },
     {
       id: 2,
-      name: "Pro",
-      price: 29,
-      period: "month",
-      icon: <Star className="w-6 h-6" />,
-      features: [
-        { name: "10 meal plans monthly", included: true },
-        { name: "Recipe library", included: true },
-        { name: "Join the community", included: true }
-      ],
-      buttonText: "Select Pro",
-      buttonStyle: "bg-cyan-500 hover:bg-cyan-600 text-white border-none",
-      popular: true
-    },
-    {
-      id: 3,
       name: "Premium",
       price: 49,
       period: "month",
-      icon: <Crown className="w-6 h-6" />,
+      icon: <Crown className="w-6 h-6" />, // You can change the icon if desired
       features: [
         { name: "Unlimited meal plans", included: true },
         { name: "Recipe library", included: true },
@@ -50,6 +38,88 @@ const PricingSection = () => {
       popular: false
     }
   ];
+
+  // Razorpay handler
+  const handlePremiumPurchase = async () => {
+    setLoading(true);
+    try {
+      // 1. Create order on backend
+      const order = await createOrder('PRO'); // plan key as per backend enum
+      const options = {
+        key: order.keyId, // Razorpay key from backend
+        amount: order.amount, // in paise
+        currency: order.currency,
+        name: 'FitMeal Planner',
+        description: 'Premium Subscription',
+        order_id: order.orderId, // Razorpay order ID
+        handler: async function (response) {
+          try {
+            console.log('Razorpay payment response:', response);
+            
+            // Helper function to extract payment data from various response formats
+            const extractPaymentData = (response) => {
+              console.log('Raw Razorpay response:', JSON.stringify(response, null, 2));
+              
+              if (response.razorpay_payment_id) {
+          
+                const constructedData = {
+                  razorpayOrderId: response.razorpay_order_id, 
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  razorpaySignature:  response.razorpay_signature, 
+                };
+                
+                console.log('Constructed verification data:', constructedData);               
+                return constructedData;
+              }
+              
+              // If no format works, log all available fields for debugging
+              console.error('Available fields in response:', Object.keys(response));
+              console.error('Response values:', Object.values(response));
+              
+              return null;
+            };
+            
+            // 2. Extract payment verification data
+            const verificationData = extractPaymentData(response);
+            
+            if (!verificationData) {
+              console.error('Could not extract payment data from response:', response);
+              throw new Error('Unable to extract payment verification data from Razorpay response');
+            }
+            
+            console.log('Sending verification data:', verificationData);
+            
+            const verifyRes = await verifyPayment(verificationData);
+            alert(verifyRes.message || 'Payment successful! Premium activated.');
+            window.location.reload();
+          } catch (verificationError) {
+            console.error('Payment verification failed:', verificationError);
+            alert('Payment verification failed: ' + (verificationError.message || 'Unknown error'));
+          }
+        },
+        prefill: {},
+        theme: { color: '#06b6d4' },
+        modal: {
+          ondismiss: function() {
+            console.log('Razorpay modal dismissed');
+            setLoading(false);
+          }
+        },
+        // Handle payment failure
+        onError: function(error) {
+          console.error('Razorpay payment error:', error);
+          alert('Payment failed: ' + (error.error?.description || error.error?.message || 'Unknown error'));
+          setLoading(false);
+        }
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error('Order creation failed:', err);
+      alert(err.message || 'Payment failed.');
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="py-16 px-4">
@@ -65,7 +135,7 @@ const PricingSection = () => {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto justify-center">
           {plans.map((plan) => (
             <div
               key={plan.id}
@@ -123,8 +193,14 @@ const PricingSection = () => {
                 </div>
 
                 {/* CTA Button */}
-                <button className={`btn w-full ${plan.buttonStyle} text-base font-semibold py-3 rounded-xl transition-all duration-300`}>
-                  {plan.buttonText}
+                <button
+                  className={`btn w-full ${plan.buttonStyle} text-base font-semibold py-3 rounded-xl transition-all duration-300`}
+                  onClick={
+                    plan.name === 'Premium' ? handlePremiumPurchase : undefined
+                  }
+                  disabled={loading && plan.name === 'Premium'}
+                >
+                  {loading && plan.name === 'Premium' ? 'Processing...' : plan.buttonText}
                 </button>
               </div>
             </div>

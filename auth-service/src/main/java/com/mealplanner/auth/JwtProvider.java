@@ -24,12 +24,13 @@ public class JwtProvider {
     }
 
     // Generate token using user email
-    public String generateToken(String email, List<String> roles) {
+    public String generateToken(String userId, String email, List<String> roles) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
         return Jwts.builder()
-                .setSubject(email)
+                .setSubject(email) // sub → email
+                .claim("id", userId) // 👈 include userId
                 .claim("roles", roles)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
@@ -38,8 +39,8 @@ public class JwtProvider {
     }
 
     // For OAuth and email-password login fallback
-    public String generateToken(String email) {
-        return generateToken(email, List.of("ROLE_USER")); // Default role
+    public String generateToken(String email, String userId) {
+        return generateToken(userId, email, List.of("ROLE_USER")); // Default role
     }
 
     public List<String> getRolesFromToken(String token) {

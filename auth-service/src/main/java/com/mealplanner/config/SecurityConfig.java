@@ -1,11 +1,12 @@
 package com.mealplanner.config;
 
-import com.mealplanner.audit.AuditLoggingFilter;
 import com.mealplanner.auth.JwtAuthenticationFilter;
-import com.mealplanner.service.OAuth2UserServiceImpl;
+import com.mealplanner.service.impl.OAuth2UserServiceImpl;
+
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,6 +22,9 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -39,13 +43,14 @@ public class SecurityConfig {
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
                 http
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .csrf(csrf -> csrf.disable())
                                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(
-                                                                "/auth/**",
+                                                                "/api/auth/**",
                                                                 "/oauth2/**")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
@@ -69,12 +74,27 @@ public class SecurityConfig {
                 return new ProviderManager(authProvider);
         }
 
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration config = new CorsConfiguration();
+                config.setAllowedOrigins(Arrays.asList("http://localhost:5173")); // React frontend
+                config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+                config.setAllowCredentials(true); // Optional, needed for cookies or credentials
+
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", config);
+                return source;
+        }
+
         // @Bean
-        // public FilterRegistrationBean<AuditLoggingFilter> auditLoggingFilter(AuditLoggingFilter filter) {
-        //         FilterRegistrationBean<AuditLoggingFilter> registration = new FilterRegistrationBean<>();
-        //         registration.setFilter(filter);
-        //         registration.setOrder(2);
-        //         return registration;
+        // public FilterRegistrationBean<AuditLoggingFilter>
+        // auditLoggingFilter(AuditLoggingFilter filter) {
+        // FilterRegistrationBean<AuditLoggingFilter> registration = new
+        // FilterRegistrationBean<>();
+        // registration.setFilter(filter);
+        // registration.setOrder(2);
+        // return registration;
         // }
 
 }

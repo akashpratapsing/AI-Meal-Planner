@@ -1,4 +1,4 @@
-package com.mealplanner.service;
+package com.mealplanner.service.impl;
 
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
