@@ -1,166 +1,217 @@
----
-
 # 🍽️ AI Meal Planner
 
-## Eat Smart, Live Better
+## Eat Smart. Plan Better. Live Healthier.
 
 ---
 
-## 🌟 About This Project
+## 🚀 Overview
 
-**AI Meal Planner** is your intelligent companion for healthy, personalized meal planning. In a world where nutrition is key but time is short, our platform leverages AI to generate custom meal plans tailored to your goals, preferences, and lifestyle. Whether you're aiming for muscle gain, weight loss, or simply a balanced diet, our system takes the guesswork out of eating well.
+**AI Meal Planner** is a full-stack, AI-powered nutrition platform that generates **personalized meal plans** using **Google Gemini**, directly integrated into a **Spring Boot backend**.
 
-**Problem Solved:**  
-Modern life is busy, and planning nutritious meals can be overwhelming. Many people struggle to find recipes that fit their dietary needs, track their nutrition, and stay motivated. AI Meal Planner solves this by automating meal planning, offering smart suggestions, and making healthy eating accessible for everyone.
-
----
-
-## 🚀 Project Overview
-
-AI Meal Planner is a full-stack application that combines a modern, user-friendly frontend with a robust backend and an AI-powered meal generation service. It supports:
-
-- **Personalized meal plans** based on user goals and preferences
-- **User authentication** and role-based access (admin/user)
-- **User profile management** with Cloudinary-powered image storage
-- **Subscription management** with Razorpay payment integration
-- **Favorite meals** and custom meal plan creation
-- **Admin dashboard** for user and activity management
-- **AI-powered meal generation** using Google Gemini
-- **Export options** (CSV, Excel) for meal plans and logs
+The application helps users plan meals aligned with their health goals—without the mental overhead of planning, tracking, or decision fatigue.
 
 ---
 
-## 🛠️ Tools & Technologies Used
+## 🎯 Problem It Solves
 
-### Frontend
-- **React 19** with Vite for blazing-fast development
-- **Tailwind CSS** & DaisyUI for beautiful, responsive design
-- **React Router v7** for seamless navigation
-- **Axios** for API communication
-- **JWT Decode** for secure authentication
-- **Heroicons, Lucide, React Icons** for a modern UI
+Healthy eating often fails not because of lack of intent, but because of friction:
 
-### Backend
-- **Spring Boot 3 (Java 21)** for scalable REST & GraphQL APIs
-- **MongoDB** for flexible, document-based storage
-- **Spring Security & OAuth2** for robust authentication
-- **JWT** for stateless, secure sessions
-- **Apache POI** for Excel export
-- **Actuator** for monitoring and health checks
+* What should I eat today?
+* Does this fit my macros?
+* How do I stay consistent?
+* How do I track favorites and progress?
 
-### Cloud Services
-- **Cloudinary** for secure profile image storage and optimization
-- **Razorpay** for secure payment processing and subscription management
-- **MongoDB Atlas** (optional) for cloud database deployment
-
-### AI Meal Generator
-- **Python 3 + Flask** for lightweight API service
-- **Google Gemini API** for advanced meal plan generation
-- **OpenAI (optional)** for future extensibility
-- **Pydantic, Jinja2, python-dotenv** for clean, maintainable code
-
-### DevOps & Tooling
-- **Docker Compose** for easy multi-service orchestration
-- **Maven** for Java dependency management
-- **Vite** for frontend tooling
-- **ESLint** for code quality
+**AI Meal Planner removes this friction** by combining AI, automation, and a clean user experience into a single system.
 
 ---
 
-## 🎨 Creative Features
+## ✨ Key Features
 
-- **Intuitive dashboards** for both users and admins
-- **User profile management** with secure image uploads via Cloudinary
-- **Subscription plans** with seamless Razorpay payment integration
-- **AI-generated meal plans**—just enter your goals and let the AI do the rest!
-- **Custom meal builder** for ultimate flexibility
-- **Weekly meal views** and nutrition breakdowns
-- **Export your plans** to CSV or Excel for shopping or tracking
-- **Audit logging** for transparency and security
-- **Responsive design** that works seamlessly across all devices
+### 👤 User Features
+
+* AI-generated personalized meal plans (Gemini powered)
+* Weekly meal views with macro & calorie breakdown
+* Favorite meals *(PRO feature)*
+* Profile management with image upload
+* Google OAuth & JWT authentication
+* Subscription-based feature access
+
+### 🛠 Admin Features
+
+* User management
+* Subscription & usage tracking
+* Feature gating
+
+### 🤖 AI Features
+
+* Google Gemini API integration directly in Java
+* Prompt-driven structured meal generation
+* Macro-aware meal planning
+* Extensible for future AI providers
 
 ---
 
-## 📦 Project Structure
+## 🧱 Architecture
+
+This project uses a **clean monolith backend** with external cloud services:
 
 ```
 AI-Meal-Planner/
-  ├── auth-service/         # Java Spring Boot backend
-  ├── frontend/             # React + Vite frontend
-  ├── meal-generator-service/ # Python Flask AI microservice
-  └── docker-compose.yml    # MongoDB Container
+├── backend/                # Spring Boot backend (Java 21)
+├── frontend/               # React + Vite frontend
+├── .gitignore
+└── README.md
 ```
 
 ---
 
-## 🔧 Configuration
+## 🛠 Tech Stack
 
-### Environment Variables
+### Frontend
 
-Make sure to configure the following environment variables:
+* React 19 + Vite
+* Tailwind CSS + DaisyUI
+* React Router v7
+* Axios (centralized API layer)
+* Framer Motion (animations)
+* Lucide / React Icons
+* JWT handling
 
-**Backend (auth-service):**
-```
-CLOUDINARY_URL=cloudinary://<api-key>:<api-secret>@cloudname
+### Backend
+
+* Spring Boot 3 (Java 21)
+* Spring Security + OAuth2
+* JWT authentication
+* MongoDB Atlas
+* Google Gemini API (Java SDK / REST)
+* Razorpay payment integration
+* Cloudinary image uploads
+* Spring Actuator
+
+### Cloud & Services
+
+* MongoDB Atlas (cloud database)
+* Google Gemini API (AI)
+* Cloudinary (image storage)
+* Razorpay (payments)
+
+---
+
+## 🔐 Security & Access Control
+
+* JWT-based stateless authentication
+* Google OAuth login
+* Role-based access control (USER / ADMIN)
+* Subscription-based feature gating
+* Secure image uploads via Cloudinary
+* Razorpay PCI-compliant payment flow
+* Input validation & sanitization
+
+---
+
+## 💳 Subscription Model
+
+| Plan    | Features                                              |
+| ------- | ----------------------------------------------------- |
+| Free    | Limited meal plans, basic browsing                    |
+| Premium | Unlimited meal plans, favorites, exports, AI features |
+
+Subscriptions are enforced **server-side**, not just at the UI level.
+
+---
+
+## ⚙️ Environment Configuration
+
+### Backend (`backend`)
+
+```env
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_SCOPES=scopes
+GOOGLE_AUTH_URI=your-google-auth-uri
+GOOGLE_TOKEN_URI=your-google-token-uri
+GOOGLE_USERINFO_URI=your-google-userinfo-uri
+GOOGLE_USER_NAME_ATTRIBUTE=sub
+
+# Razorpay
 RAZORPAY_KEY_ID=your-razorpay-key-id
 RAZORPAY_KEY_SECRET=your-razorpay-key-secret
-MONGODB_URI=mongodb://localhost:27017/ai-meal-planner
+RAZORPAY_WEBHOOK_SECRET=your-razorpay-webhook-secret
+
+# Cloudinary
+CLOUDINARY_URL=cloudinary://<api-key>:<api-secret>@cloudname
+
+# MealDB URL
+MEALDB_BASE_URL=meal-db-base-url
+
+# Security
 JWT_SECRET=your-jwt-secret
-```
+JWT_EXPIRATION=86400000
 
-**AI Service (meal-generator-service):**
-```
-GOOGLE_GEMINI_API_KEY=your-gemini-api-key
+# Database
+MONGODB_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/ai-meal-planner
+
+# Gemini AI
+GEMINI_API_KEY=your-gemini-api-key
 ```
 
 ---
 
-## 🚦 Get Started
+## 🚦 Getting Started
 
-1. **Clone the repo:**  
-   `git clone https://github.com/your-username/AI-Meal-Planner.git`
+### 1️⃣ Clone the repository
 
-2. **Start MongoDB using Docker Compose:**  
-   `docker-compose up -d`
-   
-   > This will launch a MongoDB container as defined in `docker-compose.yml`. This is required because MongoDB is not installed locally.
+```bash
+git clone https://github.com/your-username/AI-Meal-Planner.git
+cd AI-Meal-Planner
+```
 
-3. **Configure environment variables:**  
-   - Set up your Cloudinary account and add the credentials to your backend environment
-   - Configure your Razorpay account for payment processing and subscription management
-   - Configure your Google Gemini API key for AI meal generation
-   - Set up JWT secret and other required environment variables
+### 2️⃣ Configure environment variables
 
-4. **Start backend, frontend, and AI services:**  
-   - Start the Java backend (`auth-service`) and Python AI service (`meal-generator-service`) according to their respective instructions (see each folder's README or documentation).
-   - Start the React frontend (`frontend`).
+* MongoDB Atlas connection string
+* Gemini API key
+* Cloudinary credentials
+* Razorpay credentials
+* JWT secret
 
-5. **Visit the app:**  
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+### 3️⃣ Start Backend
+
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+### 4️⃣ Start Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### 5️⃣ Open the app
+
+```
+http://localhost:3000
+```
 
 ---
 
-## 🔐 Security Features
+## 💬 Inspiration
 
-- **JWT-based authentication** for secure user sessions
-- **Cloudinary secure uploads** with automatic image optimization
-- **Razorpay secure payments** with PCI DSS compliant processing
-- **Role-based access control** (admin/user permissions)
-- **Subscription management** with automated billing and renewal
-- **Input validation** and sanitization across all endpoints
-- **Audit logging** for user activities and system events
-
----
-
-## 💡 Inspiration
-
-> "Let food be thy medicine and medicine be thy food."  
+> *“Let food be thy medicine and medicine be thy food.”*
 > — Hippocrates
 
-With AI Meal Planner, healthy eating is just a click away. Enjoy smarter meals, every day!
-
 ---
 
-*Happy Planning & Bon Appétit!* 🍏
+## 🥗 Final Words
 
----
+**AI Meal Planner** turns nutrition into a system—not a struggle.
+
+**Smarter meals.**
+**Less thinking.**
+**Better consistency.**
+
+Bon Appétit & Happy Planning! 🍏
