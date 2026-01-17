@@ -1,11 +1,10 @@
-import LogActivityTable from "../components/adminComponents/LogActivityTable";
 import UserCountCard from "../components/adminComponents/UserCountCard";
 import UserListTable from "../components/adminComponents/UserListTable";
 import UserRoleChart from "../components/adminComponents/UserRoleChart";
 
 const AdminPanel = () => {
   return (
-    <div className="min-h-screen bg-base-200" data-theme="light">
+    <div className="min-h-screen bg-base-200">
       <div className="container mx-auto px-4 md:px-6 lg:px-10 py-6">
         
         {/* Header */}
@@ -37,10 +36,10 @@ const AdminPanel = () => {
               <h2 className="text-xl font-semibold mb-4">User List</h2>
               <UserListTable />
             </div>
-            <div className="bg-base-100 shadow rounded-2xl p-4 md:p-6">
+            {/* <div className="bg-base-100 shadow rounded-2xl p-4 md:p-6">
               <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
               <LogActivityTable />
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

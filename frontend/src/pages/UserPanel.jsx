@@ -1,7 +1,7 @@
-// DashboardLayout.jsx
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import UserNavbar from "../components/layout/UserNavbar";
+import { Menu } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import ProfileSidebar from "../components/userComponents/ProfileSidebar";
 
 const UserPanel = () => {
@@ -13,69 +13,84 @@ const UserPanel = () => {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col">
-      {/* Navbar (Only for small screens) */}
-      <header className="h-16 shadow bg-white z-10 flex items-center px-4 lg:hidden">
-        {/* Mobile sidebar toggle button */}
+    <div className="h-screen w-full flex flex-col bg-base-200">
+      {/* Mobile Header */}
+      <header className="lg:hidden flex items-center justify-between px-4 h-16 bg-base-100 shadow-sm z-30 relative">
         <button
-          className="btn btn-ghost"
-          onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+          className="btn btn-ghost btn-circle"
+          onClick={() => setMobileSidebarOpen(true)}
         >
+          <Menu className="w-6 h-6" />
+        </button>
+        {/* <span className="font-bold text-xl text-primary">FitMeal Planner</span> */}
+        <div className="relative">
+          <span
+            className="text-3xl font-bold"
+            style={{
+              fontFamily:
+                "'Brush Script MT', cursive, 'Comic Sans MS', sans-serif",
+              letterSpacing: "-0.05em",
+            }}
+          >
+            FitMeal
+          </span>
           <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+            className="absolute -bottom-1 left-0 w-full"
+            height="8"
+            viewBox="0 0 100 8"
+            preserveAspectRatio="none"
           >
             <path
+              d="M 0 4 Q 50 8 100 4"
+              stroke="currentColor"
+              strokeWidth="2"
+              fill="none"
               strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
             />
           </svg>
-        </button>
-
-        {/* Navbar content (user avatar, etc.) */}
-        <div className="flex-1">
-          <UserNavbar />
         </div>
+        <span className="sr-only">FitMeal</span>
+        <div className="w-10" /> {/* Spacer */}
       </header>
 
-      {/* Main Content Section */}
-      <div className="flex flex-1 overflow-hidden bg-[#d2f0f8]">
-        {/* Sidebar for large screens */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Desktop Sidebar */}
         <aside
-          className={`hidden lg:block transition-all duration-300 ${
+          className={`hidden lg:block h-full z-20 transition-all duration-300 ease-in-out ${
             sidebarExpanded ? "w-64" : "w-16"
           }`}
         >
           <ProfileSidebar onToggle={handleSidebarToggle} />
         </aside>
 
-        {/* Sidebar as drawer for mobile screens */}
-        {mobileSidebarOpen && (
-          <div className="fixed inset-0 z-40 lg:hidden flex">
-            {/* Overlay */}
-            <div
-              className="fixed inset-0 bg-black bg-opacity-50"
-              onClick={() => setMobileSidebarOpen(false)}
-            ></div>
+        {/* Mobile Drawer */}
+        <AnimatePresence>
+          {mobileSidebarOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setMobileSidebarOpen(false)}
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+              />
+              <motion.aside
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="fixed inset-y-0 left-0 w-64 h-full z-50 lg:hidden"
+              >
+                <ProfileSidebar onToggle={() => {}} />
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
 
-            {/* Drawer */}
-            <aside className="relative w-64 bg-white shadow-lg h-full z-50">
-              <ProfileSidebar onToggle={handleSidebarToggle} />
-            </aside>
-          </div>
-        )}
-
-        {/* Outlet (Main Section) */}
-        <section className="flex-1 p-2 sm:p-4">
-          <div className="h-full bg-base-300 rounded-xl shadow px-3 sm:px-6 py-4 sm:py-6 overflow-y-auto">
-            <Outlet />
-          </div>
-        </section>
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto bg-base-200 w-full relative">
+          <Outlet />
+        </main>
       </div>
     </div>
   );

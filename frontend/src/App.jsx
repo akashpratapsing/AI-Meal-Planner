@@ -7,7 +7,6 @@ import MealPlanList from "./components/userComponents/MealPlanList";
 import WeeklyMealView from "./components/userComponents/WeeklyMealView";
 import SuggestedMeal from "./components/userComponents/SuggestedMeal";
 import PersonalInfo from "./components/userComponents/PersonalInfo";
-import CustomMealPlanBuilder from "./components/userComponents/CustomMealPlanBuilder";
 import PricingSection from "./components/sections/PricingSection";
 import FavoriteMealSection from "./components/userComponents/FavoriteMealSection";
 import UserPanel from "./pages/UserPanel";
@@ -15,10 +14,10 @@ import AdminPanel from "./pages/AdminPanel";
 import RoleBasedRoute from "./routes/RoleBasedRoute";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Welcome from "./components/userComponents/Welcome";
-import MealCard from "./components/userComponents/MealCard";
-import CustomMealPlanView from "./components/userComponents/CustomMealPlanView";
 import toast, { Toaster } from "react-hot-toast";
 import Unauthorized from "./components/Unauthorized";
+import MealBrowser from "./components/userComponents/MealBrowser";
+import PublicOnlyRoute from "./routes/PublicOnlyRoute";
 
 function App() {
   return (
@@ -27,7 +26,9 @@ function App() {
       <Routes>
         {/* Public */}
         <Route path="/" element={<LandingPage />} />
-        <Route path="/auth" element={<AuthForm />} />
+        <Route element={<PublicOnlyRoute />}>
+          <Route path="/auth" element={<AuthForm />} />
+        </Route>
 
         {/* Authenticated Redirection */}
         <Route path="/protected" element={<ProtectedRoute />} />
@@ -49,26 +50,16 @@ function App() {
             <Route path="mealPlans" element={<MealPlanList />} />
             <Route path="mealPlans/view" element={<WeeklyMealView />} />
             <Route path="mealPlans/:id" element={<WeeklyMealView />} />
-            <Route path="mealPlans/:id/view" element={<MealCard />} />
-            <Route
-              path="customMealPlans/:id"
-              element={<CustomMealPlanView />}
-            />
             <Route path="random" element={<SuggestedMeal />} />
             <Route path="me" element={<PersonalInfo />} />
-            <Route path="build" element={<CustomMealPlanBuilder />} />
+            <Route path="browse" element={<MealBrowser />} />
             <Route path="pricing" element={<PricingSection />} />
             <Route path="favorite-meal" element={<FavoriteMealSection />} />
           </Route>
         </Route>
 
         {/* Fallback Unauthorized */}
-        <Route
-          path="/unauthorized"
-          element={
-            <Unauthorized />
-          }
-        />
+        <Route path="/unauthorized" element={<Unauthorized />} />
       </Routes>
     </>
   );

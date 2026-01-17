@@ -1,59 +1,62 @@
 @import "tailwindcss";
 @plugin "daisyui";
 @plugin "daisyui/theme" {
-  name: "fitmeal-oceanic";
+  name: "fitmeal-violet";
   default: false;
   prefersdark: false;
   color-scheme: "light";
 
   /* Base Backgrounds & Text */
-  --color-base-100: oklch(96% 0.02 220); /* light blue background */
-  --color-base-200: oklch(93% 0.03 225);
-  --color-base-300: oklch(90% 0.03 220);
-  --color-base-content: oklch(20% 0.005 260); /* dark text */
+  --color-base-100: oklch(99% 0.005 290);
+  --color-base-200: oklch(96% 0.01 290);
+  --color-base-300: oklch(92% 0.015 290);
+  --color-base-content: oklch(15% 0.012 290);
 
-  /* Primary - vibrant cyan */
-  --color-primary: oklch(68% 0.25 210); /* #00BEE8 range */
-  --color-primary-content: oklch(98% 0.005 260); /* white text */
+  /* Primary - Royal Purple (premium, transformation) */
+  --color-primary: oklch(62% 0.26 285); /* deep vibrant purple */
+  --color-primary-content: oklch(99% 0.005 285);
 
-  /* Secondary - soft purple for highlights */
-  --color-secondary: oklch(65% 0.22 290); /* lavender-violet tone */
-  --color-secondary-content: oklch(98% 0.01 280); /* white text */
+  /* Secondary - Midnight Purple */
+  --color-secondary: oklch(30% 0.1 280);
+  --color-secondary-content: oklch(99% 0.005 280);
 
-  /* Accent - deeper indigo/blue */
-  --color-accent: oklch(52% 0.23 250); /* deep blue-violet */
-  --color-accent-content: oklch(97% 0.01 260); /* light text */
+  /* Accent – Soft Light Purple */
+  --color-accent: oklch(75% 0.14 300);
+  --color-accent-content: oklch(99% 0.01 300);
 
-  /* Neutral (gray shades) */
-  --color-neutral: oklch(82% 0.01 240);  /* soft gray-blue */
-  --color-neutral-content: oklch(18% 0.005 260);  /* near black */
+  /* Neutral */
+  --color-neutral: oklch(88% 0.008 290);
+  --color-neutral-content: oklch(18% 0.01 290);
 
   /* Status Colors */
-  --color-info: oklch(72% 0.21 245);  /* bright cyan */
-  --color-info-content: oklch(98% 0.02 260);
+  --color-info: oklch(68% 0.24 260);
+  --color-info-content: oklch(99% 0.01 260);
 
-  --color-success: oklch(70% 0.24 160); /* teal green */
-  --color-success-content: oklch(98% 0.02 150);
+  --color-success: oklch(70% 0.24 150);
+  --color-success-content: oklch(99% 0.015 150);
 
-  --color-warning: oklch(78% 0.21 90);  /* light yellow-orange */
-  --color-warning-content: oklch(20% 0.01 70);
+  --color-warning: oklch(78% 0.22 80);
+  --color-warning-content: oklch(20% 0.02 80);
 
-  --color-error: oklch(60% 0.26 25);  /* red-orange */
-  --color-error-content: oklch(98% 0.015 20);
+  --color-error: oklch(58% 0.26 20);
+  --color-error-content: oklch(99% 0.015 20);
 
-  /* Radius & Size */
+  /* Radius - Modern curves */
   --radius-selector: 0.5rem;
-  --radius-field: 0.75rem;
-  --radius-box: 1rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
+  --radius-field: 0.625rem;
+  --radius-box: 0.875rem;
+  --radius-btn: 0.625rem;
 
-  /* Border, Shadows, Noise */
-  --border: 1px;
-  --depth: 0;
-  --noise: 0;
+  /* Size & Effects */
+  --size-selector: 0.35rem;
+  --size-field: 0.35rem;
+  --border: 1.5px;
+  --depth: 0.04;
+  --noise: 0.02;
+
+  --animation-btn: 0.15s;
+  --animation-input: 0.15s;
 }
-
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
@@ -65,4 +68,54 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+
+.animate-marquee-reverse {
+  animation: marquee 40s linear infinite reverse;
+}
+
+.animate-marquee:hover,
+.animate-marquee-reverse:hover {
+  animation-play-state: paused;
+}
+
+@keyframes floatSlow {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+.animate-floatSlow {
+  animation: floatSlow 4s ease-in-out infinite;
 }
