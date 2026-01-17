@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   FaUser,
   FaPlus,
@@ -11,8 +11,8 @@ import {
 import { Rocket } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import logo from "../../assets/logo.svg";
 import icon from "../../assets/icon.svg";
+import miniIcon from "../../assets/miniIcon.svg";
 
 const ProfileSidebar = ({ onToggle }) => {
   const { logout } = useAuth();
@@ -41,33 +41,38 @@ const ProfileSidebar = ({ onToggle }) => {
   }, []);
 
   return (
-    <div className="h-full bg-base-300 rounded-xl shadow-xl flex flex-col">
+    <div
+      className={`
+    h-full bg-base-300 rounded-xl shadow-xl flex flex-col
+    transition-all duration-300 ease-in-out
+    ${expanded ? "w-64" : "w-20"}
+  `}
+    >
       {/* Toggle button → only visible on large screens */}
       <div className="hidden lg:flex justify-end p-2">
         <button
           onClick={toggleSidebar}
-          className="btn btn-ghost btn-sm btn-circle"
+          className="btn btn-ghost btn-sm btn-circle transition-transform duration-300"
         >
-          {expanded ? "←" : "→"}
+          <span className={expanded ? "rotate-180" : ""}>➤</span>
         </button>
       </div>
 
       {/* Website Logo */}
-      <div
-        className={`flex items-center justify-center mb-6 ${
-          expanded ? "px-6" : "px-2"
-        }`}
-      >
+      <div className="flex items-center justify-center mb-6 transition-all duration-300">
         <img
-          src={expanded ? logo : icon}
-          className={`${expanded ? "w-48 h-24" : "w-12 h-12"} rounded-md`}
+          src={expanded ? icon : miniIcon}
+          className={`
+      transition-all duration-300 ease-in-out
+      ${expanded ? "w-40 opacity-100" : "w-10 opacity-80"}
+    `}
           alt="Website Logo"
         />
       </div>
 
       {/* Navigation Menu */}
       <nav
-        className={`flex flex-col gap-2 text-sm text-gray-700 ${
+        className={`flex flex-col gap-2 text-sm text-base-content/70 ${
           expanded ? "px-4" : "px-1"
         } flex-1 overflow-y-auto`}
       >
@@ -97,8 +102,8 @@ const ProfileSidebar = ({ onToggle }) => {
         />
         <SidebarLink
           icon={<FaUtensils />}
-          label="Create Your Own Meal Plan"
-          to="/dashboard/build"
+          label="Browse Meals"
+          to="/dashboard/browse"
           expanded={expanded}
         />
         <SidebarLink
@@ -121,7 +126,7 @@ const ProfileSidebar = ({ onToggle }) => {
           onClick={handleLogout}
           className={`flex items-center ${
             expanded ? "justify-start space-x-2 px-4" : "justify-center"
-          } py-2 hover:bg-gray-100 w-full rounded-lg`}
+          } py-2 hover:bg-base-200 w-full rounded-lg`}
         >
           <FaSignOutAlt />
           {expanded && <span>Logout</span>}
@@ -136,15 +141,23 @@ const SidebarLink = ({ icon, label, to, expanded }) => (
   <NavLink
     to={to}
     className={({ isActive }) =>
-      `flex items-center ${
-        expanded ? "justify-start gap-3 px-3" : "justify-center"
-      } py-2 rounded-lg transition ${
-        isActive ? "bg-white font-semibold" : "hover:bg-blue-100"
-      }`
+      `
+      flex items-center rounded-lg py-2 transition-all duration-300
+      ${expanded ? "gap-3 px-4" : "justify-center px-0"}
+      ${isActive ? "bg-accent font-semibold shadow-sm" : "hover:bg-base-200"}
+      `
     }
   >
     <span className="text-base">{icon}</span>
-    {expanded && <span>{label}</span>}
+
+    <span
+      className={`
+        whitespace-nowrap overflow-hidden transition-all duration-300
+        ${expanded ? "opacity-100 w-auto" : "opacity-0 w-0"}
+      `}
+    >
+      {label}
+    </span>
   </NavLink>
 );
 

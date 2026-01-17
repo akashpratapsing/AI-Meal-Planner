@@ -1,16 +1,17 @@
 import React, { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { loginUser, registerUser } from "../services/authService";
-import toast from 'react-hot-toast';
+import { loginUser, registerUser, googleAuth } from "../services/authService";
+import toast from "react-hot-toast";
+import { GoogleLogin } from "@react-oauth/google";
+import logo from "../assets/logo.svg";
 
 const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -31,7 +32,6 @@ const AuthForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     try {
@@ -48,16 +48,12 @@ const AuthForm = () => {
           roles: res.roles.map((r) => r.authority),
         };
 
-        console.log("User Data => ", userData);
-
         localStorage.setItem("user", JSON.stringify(userData));
-        // setUser(userData);
-        toast.success("Login successful 🎉");
         login(userData, res.token);
+        toast.success("Login successful 🎉");
         navigate("/protected");
       } else {
         if (formData.password !== formData.confirmPassword) {
-          setError("Passwords do not match.");
           toast.error("Passwords do not match ❌");
           setLoading(false);
           return;
@@ -69,18 +65,17 @@ const AuthForm = () => {
           password: formData.password,
         };
 
-        const res = await registerUser(payload);
-        // alert(res); // string response like: "User registered Successfully"
-        toast.success("User registered Successfully🎉");
+        await registerUser(payload);
+        toast.success("User registered successfully 🎉");
         setIsLogin(true);
       }
     } catch (err) {
-      setError(err.message || "Something went wrong");
       toast.error(err.message || "Something went wrong 😢");
     } finally {
       setLoading(false);
     }
   };
+
   const toggleMode = () => {
     setIsLogin(!isLogin);
     setFormData({
@@ -91,243 +86,232 @@ const AuthForm = () => {
     });
   };
 
+  // ✅ Handle Google Login Success
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const res = await googleAuth(credentialResponse.credential); // send to backend
+      const userData = {
+        userId: res.userId,
+        email: res.email,
+        token: res.token,
+        roles: res.roles
+      };
+      console.log("Current Origin:", window.location.origin);
+      console.log("Client ID from Env:", import.meta.env.VITE_GOOGLE_CLIENT_ID);
+      console.log(res);
+      localStorage.setItem("user", JSON.stringify(userData));
+      login(userData, res.token);
+      toast.success("Google login successful 🎉");
+      navigate("/protected");
+    } catch (err) {
+      toast.error("Google login failed ❌");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-200 via-cyan-600 to-cyan-200 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
-        <div className="flex flex-col md:flex-row min-h-[600px]">
-          {/* Left Section - Image (Hidden on mobile) */}
-          <div className="hidden md:flex md:w-1/2 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-blue-600/20 z-10" />
-            <img
-              src="/auth-banner.png"
-              alt="Authentication Banner"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                // Fallback to gradient background if image fails to load
-                e.target.style.display = "none";
-                e.target.parentElement.style.background =
-                  "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
-              }}
-            />
-            <div className="absolute inset-0 z-20 flex items-center justify-center">
-              <div className="text-center text-white p-8">
-                <h2 className="text-4xl font-bold mb-4">Welcome to FitMeal</h2>
-                <p className="text-xl opacity-90">
-                  Transform your meals and achieve your goals
-                </p>
-              </div>
+    <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
+      <div className="w-full max-w-5xl bg-base-100 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+        {/* Left Section - Visual */}
+        <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-primary to-secondary relative p-12 flex-col justify-center items-center text-center text-primary-content overflow-hidden">
+          {/* Decorative elements */}
+          <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+          <div className="absolute -top-24 -left-24 w-80 h-80 bg-white/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-black/20 rounded-full blur-3xl"></div>
+
+          {/* Content */}
+          <div className="relative z-10 max-w-md">
+            <div className="flex flex-col items-center gap-6 mb-10">
+              {/* <div className="p-4 bg-white/10 rounded-3xl backdrop-blur-sm shadow-xl border border-white/20"> */}
+              <img
+                src={logo}
+                alt="FitMeal"
+                className="h-4xl w-auto brightness-0 invert drop-shadow-lg"
+              />
+              {/* </div> */}
+              {/* <span className="text-4xl font-extrabold tracking-tight drop-shadow-md">FitMeal Planner</span> */}
             </div>
+
+            <h2 className="text-3xl font-bold mb-6 leading-tight drop-shadow-sm">
+              Your Personal AI Nutritionist
+            </h2>
+            <p className="text-lg opacity-90 leading-relaxed font-medium">
+              Craft personalized meal plans, track your nutrition, and achieve
+              your fitness goals with the power of AI.
+            </p>
           </div>
 
-          {/* Right Section - Form */}
-          <div className="w-full md:w-1/2 flex items-center justify-center p-8">
-            <div className="w-full max-w-md">
-              {/* Header */}
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-white mb-2">
-                  {isLogin ? "Welcome Back" : "Create Account"}
-                </h1>
-                <p className="text-white/70">
-                  {isLogin
-                    ? "Sign in to your account"
-                    : "Join our community today"}
-                </p>
+          <div className="absolute bottom-8 text-sm opacity-70 font-medium">
+            © {new Date().getFullYear()} FitMeal Planner. All rights reserved.
+          </div>
+        </div>
+
+        {/* Right Section - Form */}
+        <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-base-content mb-2">
+              {isLogin ? "Welcome Back" : "Create Account"}
+            </h1>
+            <p className="text-base-content/60">
+              {isLogin
+                ? "Enter your details to access your account"
+                : "Get started with your free account today"}
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {!isLogin && (
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium text-base-content">
+                    Full Name
+                  </span>
+                </label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-base-content/40 w-5 h-5" />
+                  <input
+                    type="text"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleInputChange}
+                    placeholder="John Doe"
+                    className="input input-bordered w-full pl-12 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary bg-base-200/50"
+                    required={!isLogin}
+                  />
+                </div>
               </div>
-              {/* 
-               {error && (
-                <div className="bg-red-500/20 border border-red-400 text-red-100 px-4 py-2 rounded text-sm mb-4">
-                  {error}
-                </div>
-              )} */}
+            )}
 
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Full Name (Register only) */}
-                {!isLogin && (
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text text-white font-medium">
-                        Full Name
-                      </span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleInputChange}
-                        placeholder="Enter your full name"
-                        className="input input-bordered w-full bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder-white/50 focus:border-white/40 focus:bg-white/20 transition-all duration-300"
-                        required={!isLogin}
-                      />
-                      <User className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
-                    </div>
-                  </div>
-                )}
+            {/* Email */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-medium text-base-content">
+                  Email Address
+                </span>
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-base-content/40 w-5 h-5" />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="you@example.com"
+                  className="input input-bordered w-full pl-12 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary bg-base-200/50"
+                  required
+                />
+              </div>
+            </div>
 
-                {/* Email */}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text text-white font-medium">
-                      Email Address
-                    </span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      placeholder="Enter your email"
-                      className="input input-bordered w-full bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder-white/50 focus:border-white/40 focus:bg-white/20 transition-all duration-300"
-                      required
-                    />
-                    <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
-                  </div>
-                </div>
-
-                {/* Password */}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text text-white font-medium">
-                      Password
-                    </span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      placeholder="Enter your password"
-                      className="input input-bordered w-full bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder-white/50 focus:border-white/40 focus:bg-white/20 transition-all duration-300 pr-20"
-                      required
-                    />
-                    <Lock className="absolute right-12 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white transition-colors"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-5 h-5" />
-                      ) : (
-                        <Eye className="w-5 h-5" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Confirm Password (Register only) */}
-                {!isLogin && (
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text text-white font-medium">
-                        Confirm Password
-                      </span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showConfirmPassword ? "text" : "password"}
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleInputChange}
-                        placeholder="Confirm your password"
-                        className="input input-bordered w-full bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder-white/50 focus:border-white/40 focus:bg-white/20 transition-all duration-300 pr-20"
-                        required={!isLogin}
-                      />
-                      <Lock className="absolute right-12 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white transition-colors"
-                      >
-                        {showConfirmPassword ? (
-                          <EyeOff className="w-5 h-5" />
-                        ) : (
-                          <Eye className="w-5 h-5" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Forgot Password (Login only) */}
-                {isLogin && (
-                  <div className="text-right">
-                    <a
-                      href="#"
-                      className="text-sm text-white/70 hover:text-white transition-colors"
-                    >
-                      Forgot your password?
-                    </a>
-                  </div>
-                )}
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  // onClick={handleSubmit}
-                  disabled={loading}
-                  className="btn w-full bg-white text-purple-600 hover:bg-white/90 border-none text-lg font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                >
-                  {/* {isLogin ? "Sign In" : "Create Account"} */}
-                  {loading
-                    ? "Please wait..."
-                    : isLogin
-                    ? "Sign In"
-                    : "Create Account"}
-                </button>
-
-                {/* Divider */}
-                <div className="divider text-white/50">or</div>
-
-                {/* Google Login Button */}
+            {/* Password */}
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-medium text-base-content">
+                  Password
+                </span>
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-base-content/40 w-5 h-5" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="••••••••"
+                  className="input input-bordered w-full pl-12 pr-12 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary bg-base-200/50"
+                  required
+                />
                 <button
                   type="button"
-                  className="btn w-full bg-white hover:bg-gray-50 text-gray-700 border-none rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-base-content/40 hover:text-base-content"
                 >
-                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                    <path
-                      fill="#4285F4"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    />
-                    <path
-                      fill="#34A853"
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    />
-                    <path
-                      fill="#FBBC05"
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    />
-                    <path
-                      fill="#EA4335"
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    />
-                  </svg>
-                  Continue with Google
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
-
-                {/* Toggle Mode */}
-                <div className="text-center mt-6">
-                  <p className="text-white/70">
-                    {isLogin
-                      ? "Don't have an account?"
-                      : "Already have an account?"}
-                    <button
-                      type="button"
-                      onClick={toggleMode}
-                      className="ml-2 text-white font-semibold hover:underline transition-all duration-300"
-                    >
-                      {isLogin ? "Sign Up" : "Sign In"}
-                    </button>
-                  </p>
-                </div>
-              </form>
+              </div>
             </div>
-          </div>
+
+            {!isLogin && (
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium text-base-content">
+                    Confirm Password
+                  </span>
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-base-content/40 w-5 h-5" />
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    placeholder="••••••••"
+                    className="input input-bordered w-full pl-12 pr-12 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary bg-base-200/50"
+                    required={!isLogin}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-base-content/40 hover:text-base-content"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={20} />
+                    ) : (
+                      <Eye size={20} />
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-primary w-full rounded-xl text-lg font-bold shadow-lg hover:shadow-primary/30 transition-all mt-2"
+            >
+              {loading ? (
+                <span className="loading loading-spinner loading-sm"></span>
+              ) : (
+                <>
+                  {isLogin ? "Sign In" : "Create Account"}
+                  <ArrowRight size={20} className="ml-2" />
+                </>
+              )}
+            </button>
+
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-base-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-base-100 text-base-content/50">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => toast.error("Google Login Failed ❌")}
+                shape="circle"
+                theme="outline"
+                size="large"
+                width={270}
+                text={isLogin ? "signin_with" : "signup_with"}
+              />
+            </div>
+
+            <p className="text-center text-base-content/60 mt-6">
+              {isLogin ? "Don't have an account?" : "Already have an account?"}
+              <button
+                type="button"
+                onClick={toggleMode}
+                className="ml-2 text-primary font-bold hover:underline"
+              >
+                {isLogin ? "Sign Up" : "Sign In"}
+              </button>
+            </p>
+          </form>
         </div>
       </div>
     </div>

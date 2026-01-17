@@ -1,206 +1,254 @@
 import React, { useEffect, useState } from "react";
-import { Heart, Star, Plus, Clock, Users, Trash2 } from "lucide-react";
+import { Heart, Trash2, ArrowRight, X, ChefHat } from "lucide-react";
+import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   deleteFavoriteMeal,
   getFavoriteMeals,
 } from "../../services/favMealService";
-import toast, { Toaster } from "react-hot-toast";
-import { jwtDecode } from "jwt-decode";
+import { useAuth } from "../../hooks/useAuth";
+import toast from "react-hot-toast";
+import UpgradeBanner from "./UpgradeBanner";
+import { useSubscription } from "../../context/SubscriptionContext";
 
 const FavoriteMealSection = () => {
+  const { user } = useAuth();
+  const { features, loading: subscriptionLoading } = useSubscription();
+
   const [meals, setMeals] = useState([]);
   const [selectedMeal, setSelectedMeal] = useState(null);
-  const [hoveredMeal, setHoveredMeal] = useState(null);
-
-  const getUserIdFromToken = () => {
-    const token = localStorage.getItem("token");
-    if (!token) return null;
-    try {
-      const decoded = jwtDecode(token);
-      return decoded?.id || null;
-    } catch {
-      return null;
-    }
-  };
-
-  const userId = getUserIdFromToken();
-  const token = localStorage.getItem("token");
-
-  const getCategoryColor = (category) => {
-    switch (category) {
-      case "Healthy":
-        return "badge-success";
-      case "Protein":
-        return "badge-info";
-      case "Drink":
-        return "badge-warning";
-      default:
-        return "badge-neutral";
-    }
-  };
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchFavorites = async () => {
+      if (!user?.userId) return;
+
       try {
-        const favorites = await getFavoriteMeals(userId, token);
-        setMeals(favorites);
-        console.log(favorites);
-      } catch (error) {
-        console.error("Error fetching favorites:", error.message);
-        toast.error("Failed to load favorite meals.");
+        setLoading(true);
+        const token = localStorage.getItem("token");
+        const data = await getFavoriteMeals(token);
+        setMeals(data);
+      } catch {
+        toast.error("Failed to load favorite meals");
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (userId && token) fetchFavorites();
-  }, [userId, token]);
+    fetchFavorites();
+  }, [user?.userId]);
 
-  const handleMealClick = (meal) => {
-    setSelectedMeal(meal);
-    console.log(meal);
-  };
-
-  const closeModal = () => {
-    setSelectedMeal(null);
-  };
-
-  const handleDelete = async (mealId) => {
+  const handleDelete = async (e, id) => {
+    e.stopPropagation();
     try {
-      await deleteFavoriteMeal(mealId, token);
-      setMeals((prev) => prev.filter((meal) => meal.id !== mealId));
-      toast.success("Meal removed from favorites.");
-    } catch (error) {
-      console.error("Error deleting meal:", error.message);
-      toast.error("Failed to delete favorite meal.");
+      const token = localStorage.getItem("token");
+      await deleteFavoriteMeal(id, token);
+      setMeals((prev) => prev.filter((m) => m.id !== id));
+      toast.success("Removed from favorites");
+    } catch {
+      toast.error("Failed to remove meal");
     }
   };
 
+  if (subscriptionLoading) return null;
+
+  // 🚫 PRO only
+  if (!features.has("FAVORITE_MEAL")) {
+    return (
+      <UpgradeBanner
+        title="Favorites are a PRO feature"
+        description="Save and manage your favorite meals with PRO access."
+      />
+    );
+  }
+
+  // ⏳ Loading
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <span className="loading loading-spinner loading-lg text-primary" />
+      </div>
+    );
+  }
+
   return (
-    <div className="card bg-base-100 shadow-xl max-w-full">
-      <div className="card-body">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Heart className="text-error" size={20} />
-            <h3 className="card-title text-lg">Your Favorite Meals</h3>
+    <div className="min-h-screen p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <Heart className="text-primary fill-primary" />
+              Favorite Meals
+            </h1>
+            <p className="text-base-content/60">
+              Your saved meals, always ready
+            </p>
           </div>
-          <div className="badge badge-outline">{meals.length} meals</div>
+
+          <div className="badge badge-primary badge-outline">
+            {meals.length} saved
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {meals.map((meal, index) => (
-            <div
-              key={meal.id}
-              className={`card bg-base-100 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:scale-105 ${
-                hoveredMeal === index ? "ring-2 ring-primary" : ""
-              }`}
-              onMouseEnter={() => setHoveredMeal(index)}
-              onMouseLeave={() => setHoveredMeal(null)}
-            >
-              <div className="card-body items-center text-center p-4">
-                <div className="text-4xl mb-2">{meal.emoji || "🍽️"}</div>
-                <p
-                  className="text-sm font-medium text-base-content mb-2"
-                  onClick={() => handleMealClick(meal)}
-                >
-                  {meal.name}
-                </p>
-                <div
-                  className={`badge ${getCategoryColor(
-                    meal.category || "Healthy"
-                  )} badge-sm mb-2`}
-                >
-                  {meal.category || "Healthy"}
-                </div>
-                <div className="flex items-center gap-1 text-xs text-base-content/60">
-                  <Clock size={12} />
-                  <span>{meal.prepTime || "N/A"}</span>
-                </div>
-                <button
-                  className="btn btn-sm btn-outline mt-2"
-                  onClick={() => handleDelete(meal.id)}
-                >
-                  <Trash2 size={14} />
-                  Remove
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Empty state */}
+        {!meals.length && (
+          <div className="text-center py-20 bg-base-100 rounded-3xl border">
+            <Heart className="mx-auto mb-4 text-base-content/30" size={40} />
+            <h3 className="font-bold text-xl mb-2">No favorites yet</h3>
+            <p className="text-base-content/60 mb-6">
+              Browse meals and save your favorites here.
+            </p>
+            <Link to="/dashboard/browse" className="btn btn-primary">
+              Browse Meals <ArrowRight size={16} />
+            </Link>
+          </div>
+        )}
 
-        {/* <div className="card-actions justify-center mt-4">
-          <button className="btn btn-outline btn-sm gap-2">
-            <Plus size={16} />
-            Add More Favorites
-          </button>
-        </div> */}
+        {/* Grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <AnimatePresence>
+            {meals.map((meal) => (
+              <motion.div
+                key={meal.id}
+                layout
+                initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 12, scale: 0.96 }}
+                transition={{ type: "spring", stiffness: 220, damping: 20 }}
+                className="group relative bg-base-100 rounded-2xl border border-base-200 shadow-sm hover:shadow-2xl transition-all cursor-pointer overflow-hidden"
+                onClick={() => setSelectedMeal(meal)}
+              >
+                {/* Image */}
+                <div className="relative h-44 overflow-hidden">
+                  <img
+                    src={meal.thumbnail}
+                    alt={meal.name}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-80" />
+
+                  {/* Delete button (intent-based) */}
+                  <button
+                    className="absolute top-3 right-3 btn btn-xs btn-circle bg-base-100/90 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-error hover:text-white"
+                    onClick={(e) => handleDelete(e, meal.id)}
+                    title="Remove from favorites"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+
+                  {/* Category badge */}
+                  <div className="absolute bottom-3 left-3">
+                    <span className="badge badge-sm badge-primary badge-outline bg-base-100/90">
+                      {meal.category}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-4 space-y-1">
+                  <h3 className="font-semibold text-base-content line-clamp-1 group-hover:text-primary transition-colors">
+                    {meal.name}
+                  </h3>
+
+                  <p className="text-xs text-base-content/60">{meal.area}</p>
+                </div>
+
+                {/* Hover affordance */}
+                <div className="absolute inset-x-0 bottom-0 h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
       </div>
 
-      {/* Modal for meal details */}
-      {selectedMeal && (
-        <div className="modal modal-open">
-          <div className="modal-box">
-            {/* Header */}
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="font-bold text-lg">{selectedMeal.name}</h3>
-              </div>
-              <button
-                className="btn btn-sm btn-circle btn-ghost"
-                onClick={closeModal}
-              >
-                ✕
-              </button>
-            </div>
+      {/* Modal */}
+      <AnimatePresence>
+        {selectedMeal && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedMeal(null)}
+          >
+            <motion.div
+              className="relative bg-base-100 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden"
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              transition={{ type: "spring", stiffness: 220, damping: 22 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header Image */}
+              <div className="relative">
+                <img
+                  src={selectedMeal.thumbnail}
+                  alt={selectedMeal.name}
+                  className="w-full h-56 object-cover"
+                />
 
-            {/* Meal Items */}
-            {selectedMeal.items && (
-              <div className="mb-4">
-                <h4 className="font-semibold mb-2">Ingredients</h4>
-                <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
-                  {selectedMeal.items.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
-            {/* Nutritional Info */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 text-sm text-center">
-              <div className="bg-blue-100 rounded-lg p-3">
-                <p className="text-lg font-semibold text-blue-800">
-                  {selectedMeal.calories || 0} kcal
-                </p>
-                <p className="text-gray-600">Calories</p>
+                {/* Title on image */}
+                <div className="absolute bottom-4 left-4 right-4">
+                  <h2 className="text-2xl font-bold text-white leading-tight">
+                    {selectedMeal.name}
+                  </h2>
+                  <p className="text-sm text-white/80">
+                    {selectedMeal.category} • {selectedMeal.area}
+                  </p>
+                </div>
               </div>
-              <div className="bg-green-100 rounded-lg p-3">
-                <p className="text-lg font-semibold text-green-800">
-                  {selectedMeal.protein || 0} g
-                </p>
-                <p className="text-gray-600">Protein</p>
-              </div>
-              <div className="bg-yellow-100 rounded-lg p-3">
-                <p className="text-lg font-semibold text-yellow-800">
-                  {selectedMeal.carbs || 0} g
-                </p>
-                <p className="text-gray-600">Carbs</p>
-              </div>
-              <div className="bg-pink-100 rounded-lg p-3">
-                <p className="text-lg font-semibold text-pink-800">
-                  {selectedMeal.fats || 0} g
-                </p>
-                <p className="text-gray-600">Fats</p>
-              </div>
-            </div>
 
-            {/* Actions */}
-            <div className="modal-action">
-              {/* <button className="btn btn-primary btn-sm">Cook This Meal</button> */}
-              <button className="btn btn-ghost btn-sm" onClick={closeModal}>
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              {/* Content */}
+              <div className="p-6 space-y-6">
+                {/* Ingredients */}
+                <div>
+                  <h4 className="font-semibold flex items-center gap-2 mb-3 text-base-content">
+                    <ChefHat size={18} className="text-primary" />
+                    Ingredients
+                  </h4>
+
+                  <div className="bg-base-200/50 rounded-xl p-4">
+                    <ul className="space-y-2 text-sm">
+                      {selectedMeal.ingredients.map((i, idx) => (
+                        <li
+                          key={idx}
+                          className="flex justify-between items-center"
+                        >
+                          <span className="text-base-content">
+                            {i.ingredient}
+                          </span>
+                          <span className="text-base-content/60">
+                            {i.measure}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Actions */}
+              <div className="px-6 pb-6 flex justify-end gap-3">
+                <button
+                  className="btn btn-error btn-outline btn-sm"
+                  onClick={(e) => {
+                    handleDelete(e, selectedMeal.id);
+                    setSelectedMeal(null);
+                  }}
+                >
+                  Remove from Favorites
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

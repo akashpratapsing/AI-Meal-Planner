@@ -1,0 +1,29 @@
+
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  
+  <!-- Definitions -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:oklch(65% 0.25 285);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:oklch(72% 0.20 220);stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="400" rx="90" fill="url(#bg-gradient)"/>
+  
+  <!-- Large "F" Letter - Centered -->
+  <g transform="translate(200, 200)">
+    <text x="0" y="0" 
+          font-family="'Brush Script MT', cursive, 'Comic Sans MS', sans-serif" 
+          font-size="280" 
+          font-weight="bold" 
+          text-anchor="middle"
+          dominant-baseline="middle"
+          fill="white"
+          letter-spacing="0">
+      F
+    </text>
+  </g>
+  
+</svg>

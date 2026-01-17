@@ -3,13 +3,13 @@ import Header from "../components/layout/Header";
 import Navigation from "../components/layout/Navigation";
 import HeroSection from "../components/sections/HeroSection";
 import FeaturesSection from "../components/sections/FeaturesSection";
-import TestimonialsSection from "../components/sections/TestimonialsSection";
+import TestimonialSection from "../components/sections/TestimonialsSection";
 import PricingSection from "../components/sections/PricingSection";
 import Footer from "../components/layout/Footer";
 
 const LandingPage = () => {
   return (
-    <div className="bg-base-100 min-h-screen font-sans scroll-smooth">
+    <div className="bg-base-100 text-base-content min-h-screen font-sans scroll-smooth">
       <Header />
       <Navigation />
 
@@ -21,8 +21,8 @@ const LandingPage = () => {
         <FeaturesSection />
       </div>
 
-      <div id="testimonials">
-        <TestimonialsSection />
+      <div id="testimonials" className="bg-base-200">
+        <TestimonialSection />
       </div>
 
       <div id="pricing">
